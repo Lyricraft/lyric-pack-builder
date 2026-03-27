@@ -1,68 +1,28 @@
 import {stringUsable} from "../public/type.js";
-import {languages} from "./languages.js";
-
-const defaultLanguage = 'zh_cn';
+import {getTranslation, languages} from "./languages.js";
 
 // 急着写，写得乱，不如想好慢慢写。
 
 export function t(key, ...args){
-    let lang = process.env.LANG;
-    if (!stringUsable(lang)){
-        lang = defaultLanguage;
-    }
-    if (!languages.has(lang)){
-        throw new Error(`[i18n] 不支持的语言 / Invalid language: ${lang}`);
-    }
-    return translate(key, lang, ...args);
-}
-
-function translate(key, lang, ...args){
     if (!stringUsable(key)){
-        throw new Error(translate('error.translate.invalidKey', lang, key));
+        throw new Error(`[i18n] 无效的翻译键名 / Invalid translate key: ${key}`);
     }
-    let message = languages.get(lang)[key];
+    let message = getTranslation(key);
     if (!message){
-        // 没有找到这个键
-        if (lang === defaultLanguage){
-            throw new Error(`[i18n] 无效的翻译键名 / Invalid translate key: ${lang}`);
-        }
-        return translate(key, defaultLanguage, ...args);
+        throw new Error(`[i18n] 无效的翻译键名 / Invalid translate key: ${key}`);
     }
     message = message.replace(/\$/g, () => {
         if (args.length === 0){
-            throw new Error(translate('error.translate.missingArgs', lang, key));
+            throw new Error(`[i18n] 键的翻译参数不足 / Missing translate args for key: ${key}`);
         }
         const arg = args.shift();
         if (!stringUsable(arg)){
-            throw new Error(translate('error.translate.invalidArgs', lang, key));
+            throw new Error(`[i18n] 键的翻译参数无效 / Invalid translate args for key: ${key}`);
         }
         return arg;
     })
     if (args.length > 0){
-        throw new Error(translate('error.translate.extraArgs', lang, key));
+        throw new Error(`[i18n] 键存在未使用的多余参数 / Extra translate args for key: ${key}`);
     }
     return message;
-}
-
-function getSystemLanguage() {
-    const envLang =
-        process.env.LANG ||
-        process.env.LC_ALL ||
-        process.env.LANGUAGE;
-
-    if (!envLang){
-        return defaultLanguage;
-    }
-
-    const lang = envLang.split('.')[0];
-
-    return lang;
-}
-
-function setLanguage(lang){
-    process.env.LANG = lang;
-}
-
-function getLanguage(){
-    return process.env.LANG || defaultLanguage;
 }
