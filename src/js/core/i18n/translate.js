@@ -1,5 +1,5 @@
 import {stringUsable} from "../public/type.js";
-import {getTranslation, languages} from "./languages.js";
+import {getTranslation} from "./languages.js";
 
 // 急着写，写得乱，不如想好慢慢写。
 

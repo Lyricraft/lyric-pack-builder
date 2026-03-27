@@ -31,20 +31,26 @@ export const ModLoader = {
     QUILT: 'quilt',
 }
 
-export const VersionStage = {
+export const VersionStageName = {
     ALPHA: 'alpha',
     BETA: 'beta',
     RELEASE: 'release',
+    UNKNOWN: 'unknown',
 }
 
 const versionStageLevels = {
-    [VersionStage.RELEASE]: 0,
-    [VersionStage.BETA]: 50,
-    [VersionStage.ALPHA]: 60,
+    [VersionStageName.RELEASE]: 0,
+    [VersionStageName.BETA]: 50,
+    [VersionStageName.ALPHA]: 60,
+    [VersionStageName.UNKNOWN]: 100,
 }
-export function getVersionStageLevel(versionStage) {
-    if (!checkEnum(versionStageLevels, versionStage)) {
-        return 100;
+
+export class VersionStage{
+    constructor(name) {
+        this.name = checkEnum(VersionStageName, name) ? name : VersionStageName.UNKNOWN;
     }
-    return versionStageLevels[versionStage];
+
+    level(){
+        return versionStageLevels[this.name];
+    }
 }

@@ -16,8 +16,11 @@
 
     "error.network.cannotRequestMsg": "请求 URL '$' 失败：\n$",
 
-    "error.modrinthApi.invalidTestResponseMsg": "测试 Modrinth API 时，服务器返回了无效的结果：$",
-    "error.modrinthApi.invalidResponseMsg": "Modrinth API 返回的结果无效：\n$",
+    "error.platformApi.invalidTestResponseMsg": "测试 $ API 时，服务器返回了无效的结果：$",
+    "error.platformApi.invalidResponseMsg": "$ API 返回的结果无效：\n$",
+    "error.platformApi.invalidProject": "无效的 $ 项目：$",
+    "error.platformApi.invalidArgs": "请求 $ API 的参数错误：$",
+    "error.platformApi.invalidArgsInfo": "请求 $ API 的参数错误。$ 应当为 $，但提供了 $",
 
     "error.fileSystem.failToDeleteFile": "无法删除文件：$"
 }

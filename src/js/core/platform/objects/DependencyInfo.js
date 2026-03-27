@@ -8,9 +8,9 @@ export const DependencyType = {
 
 export class DependencyInfo {
     constructor(projectId, dependencyType, versionId = "", fileName = "") {
-        this.projectId = projectId;
-        this.dependencyType = dependencyType; // DependencyType
-        this.versionId = versionId;
-        this.fileName = fileName;
+        this.projectId = projectId ?? "";
+        this.dependencyType = dependencyType ?? DependencyType.REQUIRED; // DependencyType
+        this.versionId = versionId ?? "";
+        this.fileName = fileName ?? "";
     }
 }

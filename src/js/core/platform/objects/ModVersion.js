@@ -1,3 +1,4 @@
+import {VersionStage, VersionStageName} from "../../mc/mcMods.js";
 
 export class ModVersion{
 
@@ -12,7 +13,7 @@ export class ModVersion{
         this.parent = parent ?? null; // ModInfo
         this.id = id ?? "";
         this.versionNumber = versionNumber ?? "";
-        this.versionStage = versionStage ?? ""; // VersionStage
+        this.versionStage = versionStage ?? new VersionStage(VersionStageName.UNKNOWN);
         this.name = name ?? "";
 
         this.dependencies = dependencies ?? []; // DependencyInfo
