@@ -46,10 +46,15 @@ export class ModrinthApi {
             id : obj.id,
             slug : obj.slug,
             title : obj.title,
+
             clientSide : obj.client_side,
             serverSide : obj.server_side,
+
             loaders : obj.loaders,
             gameVersions : Array.isArray(obj.game_versions) ? obj.game_versions.map(v => Version.fromString(v)) : [],
+
+            publishedAt : Date.parse(obj.published),
+            updatedAt : Date.parse(obj.updated),
         });
     }
 
