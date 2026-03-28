@@ -1,11 +1,19 @@
-import 'dotenv/config'
-import {CurseforgeApi} from "./core/platform/curseforge/CurseforgeApi.js";
-import {McVersion} from "./core/mc/mcVersion.js";
-import {McContent, ModLoader} from "./core/mc/mcMods.js";
+import {ModrinthApi} from "./core/platform/modrinth/ModrinthApi.js";
+import {ModLoader, VersionStage, VersionStageName} from "./core/mc/mcMods.js";
+import {Version, VERSION_PATTERN} from "./core/objects/version.js";
+import {McVersion, ReleaseMcVersion} from "./core/mc/mcVersion.js";
+import {
+    ModVersionCollection,
+    ModVersionCollectionFilterCriteria, ModVersionCollectionSortField
+} from "./core/platform/objects/ModVersionCollection.js";
 
-const curseforge = new CurseforgeApi(process.env.CURSEFORGE_API_KEY)
 
-const mod = await curseforge.modInfoFromSlug('quark', McContent.MOD);
+const modrinth = new ModrinthApi();
+const mod = await modrinth.modInfo('create');
 console.log(mod);
-const versions = await curseforge.modVersions(mod, {gameVersions: [McVersion.parseString('1.21.1')], loader: ModLoader.NEOFORGE});
+const versions = await modrinth.modVersions(mod, {loaders: [ModLoader.NEOFORGE], gameVersions: [McVersion.parseString('1.21.1')]});
 console.log(versions);
+const fd = versions.filter({[ModVersionCollectionFilterCriteria.VERSION_STAGE]: new VersionStage(VersionStageName.RELEASE)})
+console.log(fd);
+const max = versions.getMax(ModVersionCollectionSortField.VERSION_NUMBER);
+console.log(max);

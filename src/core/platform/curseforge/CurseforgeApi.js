@@ -3,7 +3,7 @@ import {t} from "../../i18n/translate.js";
 import {McContent, ModLoader, ModSideSupport, PubPlatform, VersionStage, VersionStageName} from "../../mc/mcMods.js";
 import {
     CURSEFORGE_GAME_ID,
-    curseforgeClassIdBiMap,
+    curseforgeClassIdBiMap, curseforgeHashAlgo,
     curseforgeLoaderTypeBiMap, curseforgeRelationT2DependencyT,
     curseforgeReleaseTypeBiMap
 } from "./curseforgeId.js";
@@ -16,6 +16,7 @@ import {Version, VERSION_PATTERN} from "../../objects/version.js";
 import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {CurseforgeModVersionPage} from "./CurseforgeModVersionPage.js";
 import {DependencyInfo, DependencyType} from "../objects/DependencyInfo.js";
+import {ModFile} from "../objects/ModFile.js";
 
 export const INVALID_CURSEFORGE_API_KEY_ERROR = 'invalidCurseforgeApiKey';
 const API_BASE = 'https://api.curseforge.com/v1';
@@ -201,10 +202,10 @@ export class CurseforgeApi {
                     versionNumber: ModVersionNumber.parseString(item.displayName),
                     versionStage: new VersionStage(curseforgeReleaseTypeBiMap.getKey(item.releaseType)),
                     name: item.displayName,
-                    dependencies: (!Array.isArray(item.dependencies) || item.dependencies.length === 0) ? [] :
+                    dependencies: (Array.isArray(item.dependencies)) ?
                         item.dependencies.map(denpendency => new DependencyInfo(
                             denpendency.modId.toString(), curseforgeRelationT2DependencyT(denpendency.relationType)
-                        )),
+                        )) : [],
                     loaders: (() => {
                         const loaders = [];
                         for (let maybeLoader of item.gameVersions) {
@@ -230,6 +231,13 @@ export class CurseforgeApi {
                         }
                         return gameVersions
                     })(),
+                    files: [(() => {
+                        const file = new ModFile(item.id.toString(), item.downloadUrl, item.fileName, item.fileLength);
+                        for (const hash of item.hashes) {
+                            file.setHash(curseforgeHashAlgo.getKey(hash.algo), hash.value);
+                        }
+                        return file;
+                    })()],
                     featured: false,
                     publishedAt: Date.parse(item.fileDate),
                 });

@@ -9,6 +9,7 @@ import {ModVersion} from "../objects/ModVersion.js";
 import {DependencyInfo} from "../objects/DependencyInfo.js";
 import {ModVersionNumber} from "../objects/ModVersionNumber.js";
 import {McVersion} from "../../mc/mcVersion.js";
+import {ModFile, ModFileHashType} from "../objects/ModFile.js";
 
 const API_BASE = 'https://api.modrinth.com/v2';
 
@@ -140,6 +141,11 @@ export class ModrinthApi {
                     new DependencyInfo(depend.project_id, depend.dependency_type, depend.version_id ?? "", depend.file_name ?? "")) : [],
                 loaders: item.loaders,
                 gameVersions: Array.isArray(item.game_versions) ? item.game_versions.map(v => McVersion.parseString(v)) : [],
+                files: Array.isArray(item.files) ? item.files.map(file =>
+                    new ModFile(file.id, file.url, file.filename, file.size)
+                        .setHash(ModFileHashType.SHA1, file.hashes.sha1)
+                        .setHash(ModFileHashType.SHA512, file.hashes.sha512)
+                ) : [],
                 featured: item.featured,
                 publishedAt: Date.parse(item.published ?? item.date_published), // 看来 Modrinth 言行不一啊（前面是文档里写的，后面是实际请求发现的）
             }));

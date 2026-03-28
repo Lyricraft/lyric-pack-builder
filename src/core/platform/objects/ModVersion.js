@@ -7,6 +7,7 @@ export class ModVersion{
         const {
             parent, id, versionNumber, versionStage, name,
             dependencies, loaders, gameVersions,
+            files,
             featured,
             publishedAt,
         } = obj;
@@ -20,6 +21,8 @@ export class ModVersion{
         this.dependencies = dependencies ?? []; // DependencyInfo[]
         this.loaders = loaders ?? []; // ModLoader[]
         this.gameVersions = gameVersions ?? []; // McVersion[]
+
+        this.files = files ?? []; // ModFile[]
 
         this.featured = featured ?? false;
 

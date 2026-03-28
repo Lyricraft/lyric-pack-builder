@@ -1,6 +1,7 @@
 import {McContent, ModLoader, VersionStage, VersionStageName} from "../../mc/mcMods.js";
 import {BiMap} from "../../public/type.js";
 import {DependencyType} from "../objects/DependencyInfo.js";
+import {ModFileHashType} from "../objects/ModFile.js";
 
 /*
     低质量垃圾 API 的绝佳范例。
@@ -47,3 +48,9 @@ export function dependencyT2CurseforgeRelationT(dependencyT) {
     }
     return 3;
 }
+
+export const curseforgeHashAlgo = new BiMap()
+    .set(ModFileHashType.SHA1, 1)
+    .set(ModFileHashType.SHA256, 2)
+    .set(ModFileHashType.SHA512, 3)
+    .set(ModFileHashType.MD5, 4);
