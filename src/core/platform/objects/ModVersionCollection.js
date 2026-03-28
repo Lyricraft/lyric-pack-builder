@@ -1,5 +1,6 @@
 import {checkEnum} from "../../public/type.js";
 import {ArgsError} from "../../public/errors.js";
+import {CANNOT_PARSE_VERSION_NUMBER_ERROR} from "./ModVersionNumber.js";
 
 // 暂且不过多写类型检验了，调用的时候注意下就好。
 
@@ -48,6 +49,30 @@ export class ModVersionCollection {
 
         return new ModVersionCollection(newArray);
     }
+
+    /*
+        默认降序，将 asc 设为 true 升序。
+
+        needSecure 是为 VERSION_NUMBER 排序方式准备的。本来解析不到 真·版本号，该项目会被放到最末尾，无论升序还是降序。
+        设为 true 后会立即抛错，type 为 CANNOT_PARSE_VERSION_NUMBER_ERROR。(定义在 ModVersionNumber.js 中) 。
+     */
+    sort(field, asc = false, needSecure = false) {
+
+    }
+
+    /*
+        我认为这是现阶段按版本排序的最稳妥的方法了。
+     */
+    sortByVersion(asc = false) {
+        try {
+            return this.sort(VersionCollectionSortField.VERSION_NUMBER, asc, true);
+        } catch(e) {
+            if (e.type !== CANNOT_PARSE_VERSION_NUMBER_ERROR){
+                throw e;
+            }
+        }
+        return this.sort(VersionCollectionSortField.PUBLISHED_AT, asc);
+    }
 }
 
 /*
@@ -76,4 +101,9 @@ const filterHandlers = {
     [VersionCollectionFilterCriteria.FEATURED] : (item, arg) => {
         return item.featured === arg.featured;
     }
+}
+
+export const VersionCollectionSortField = {
+    PUBLISHED_AT: 'publishedAt', // 不完全准确
+    VERSION_NUMBER : 'versionNumber', // 不安全
 }

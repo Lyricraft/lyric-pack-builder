@@ -4,6 +4,8 @@ import {CompareResult} from "../public/calculate.js";
 
 // 想想你造过的轮子，用用你造过的轮子。
 
+export const VERSION_PATTERN = /^\d+(\.\d+)*$/;
+
 export class Version {
     constructor(...args) {
         if (args.length <= 1){
@@ -31,7 +33,7 @@ export class Version {
     }
 
     static fromString(str) {
-        if (!stringUsable(str) || !/^\d+(\.\d+)*$/.test(str)){
+        if (!stringUsable(str) || !VERSION_PATTERN.test(str)){
             throw new Error(t('error.versionType.invalidVersionString', str));
         }
         const versionArray = str.split('.');
