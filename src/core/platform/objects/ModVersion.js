@@ -26,7 +26,7 @@ export class ModVersion{
 
         this.featured = featured ?? false;
 
-        this.publishedAt = publishedAt ?? new Date(0);
+        this.publishedAt = publishedAt ?? 0; // int 毫秒时间戳
     }
 
 }

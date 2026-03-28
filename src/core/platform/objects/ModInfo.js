@@ -23,8 +23,8 @@ export class ModInfo{
         this.loaders = loaders ?? []; // ModLoader[]
         this.gameVersions = gameVersions ?? []; // McVersion[]
 
-        this.publishedAt = publishedAt ?? new Date(0);
-        this.updatedAt = updatedAt ?? new Date(0);
+        this.publishedAt = publishedAt ?? 0; // int 毫秒时间戳
+        this.updatedAt = updatedAt ?? 0; // int 毫秒时间戳
     }
 
 }
