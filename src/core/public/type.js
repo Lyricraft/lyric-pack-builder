@@ -45,24 +45,24 @@ export function deepClone(value) {
     return value;
 }
 
-export function deepMerge(target, source) {
-    if (!isPlainObject(source) || !isPlainObject(target)) {
-        return target;
+export function deepMerge(template, active) {
+    if (!isPlainObject(active) || !isPlainObject(template)) {
+        return template;
     }
 
-    for (const key of Object.keys(source)) {
-        const sourceValue = source[key];
-        const targetValue = target[key];
+    for (const key of Object.keys(active)) {
+        const activeValue = active[key];
+        const templateValue = template[key];
 
-        if (isPlainObject(sourceValue) && isPlainObject(targetValue)) {
-            deepMerge(targetValue, sourceValue);
+        if (isPlainObject(activeValue) && isPlainObject(templateValue)) {
+            deepMerge(templateValue, activeValue);
             continue;
         }
 
-        target[key] = deepClone(sourceValue);
+        template[key] = deepClone(activeValue);
     }
 
-    return target;
+    return template;
 }
 
 export function checkEnum(enumObj, value) {
