@@ -43,5 +43,3 @@ export class ModVersionNumber {
     }
 
 }
-
-export const CANNOT_PARSE_VERSION_NUMBER_ERROR = 'cannotParseVersionNumber';

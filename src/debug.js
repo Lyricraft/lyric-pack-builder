@@ -4,7 +4,7 @@ import {Version, VERSION_PATTERN} from "./core/objects/version.js";
 import {McVersion, ReleaseMcVersion} from "./core/mc/mcVersion.js";
 import {
     ModVersionCollection,
-    ModVersionCollectionFilterCriteria
+    ModVersionCollectionFilterCriteria, ModVersionCollectionSortField
 } from "./core/platform/objects/ModVersionCollection.js";
 
 
@@ -15,5 +15,5 @@ const versions = await modrinth.modVersions(mod, {loaders: [ModLoader.NEOFORGE],
 console.log(versions);
 const fd = versions.filter({[ModVersionCollectionFilterCriteria.VERSION_STAGE]: new VersionStage(VersionStageName.RELEASE)})
 console.log(fd);
-const max = versions.getLatest();
+const max = versions.getMax(ModVersionCollectionSortField.VERSION_NUMBER);
 console.log(max);
