@@ -1,6 +1,6 @@
 
 export class TypedError extends Error {
-    constructor(type, message, obj = {}) {
+    constructor(type, message = type, obj = {}) {
         super(message);
         this.type = type;
         this.obj = obj;

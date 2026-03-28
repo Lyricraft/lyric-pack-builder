@@ -2,7 +2,7 @@ import axios from "axios";
 import {t} from "../../i18n/translate.js";
 import {ModInfo} from "../objects/ModInfo.js";
 import {Version} from "../../objects/version.js";
-import {PubPlatform, ModLoader} from "../../mc/mcMods.js";
+import {PubPlatform, ModLoader, VersionStage} from "../../mc/mcMods.js";
 import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {checkEnum} from "../../public/type.js";
 import {ModVersion} from "../objects/ModVersion.js";
@@ -132,7 +132,7 @@ export class ModrinthApi {
                 parent,
                 id: item.id,
                 versionNumber: ModVersionNumber.parseModrinth(item.version_number),
-                versionStage: item.version_type,
+                versionStage: new VersionStage(item.version_type),
                 name: item.name,
                 dependencies: Array.isArray(item.dependencies) ? item.dependencies.map(depend =>
                     new DependencyInfo(depend.project_id, depend.dependency_type, depend.version_id ?? "", depend.file_name ?? "")) : [],
