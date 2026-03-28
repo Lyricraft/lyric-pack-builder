@@ -1,10 +1,10 @@
 import axios from "axios";
 import {t} from "../../i18n/translate.js";
-import {ModLoader, ModSideSupport, PubPlatform, VersionStage, VersionStageName} from "../../mc/mcMods.js";
+import {McContent, ModLoader, ModSideSupport, PubPlatform, VersionStage, VersionStageName} from "../../mc/mcMods.js";
 import {
     CURSEFORGE_GAME_ID,
     curseforgeClassIdBiMap,
-    curseforgeLoaderTypeBiMap,
+    curseforgeLoaderTypeBiMap, curseforgeRelationT2DependencyT,
     curseforgeReleaseTypeBiMap
 } from "./curseforgeId.js";
 import {checkEnum, stringUsable} from "../../public/type.js";
@@ -15,6 +15,7 @@ import {ModVersionNumber} from "../objects/ModVersionNumber.js";
 import {Version, VERSION_PATTERN} from "../../objects/version.js";
 import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {CurseforgeModVersionPage} from "./CurseforgeModVersionPage.js";
+import {DependencyInfo, DependencyType} from "../objects/DependencyInfo.js";
 
 export const INVALID_CURSEFORGE_API_KEY_ERROR = 'invalidCurseforgeApiKey';
 const API_BASE = 'https://api.curseforge.com/v1';
@@ -70,9 +71,15 @@ export class CurseforgeApi {
         return obj;
     }
 
-    async modInfoFromSlug(slug) {
+    async modInfoFromSlug(slug, contentType) {
+
+        if (!checkEnum(McContent, contentType) || contentType === McContent.DATAPACK) {
+            throw new Error(t('error.platformApi.invalidArgsInfo', PubPlatform.CURSEFORGE, 'contentType', 'ContentType (except Datapack)', contentType));
+        }
+
         const requestUrl = this.#urlWithGameId(`${API_BASE}/mods/search`);
         requestUrl.searchParams.set('slug', slug);
+        requestUrl.searchParams.set('classId', curseforgeClassIdBiMap.get(contentType).toString());
 
         let obj;
         try {
@@ -194,7 +201,10 @@ export class CurseforgeApi {
                     versionNumber: ModVersionNumber.parseString(item.displayName),
                     versionStage: new VersionStage(curseforgeReleaseTypeBiMap.getKey(item.releaseType)),
                     name: item.displayName,
-                    dependencies: [],
+                    dependencies: (!Array.isArray(item.dependencies) || item.dependencies.length === 0) ? [] :
+                        item.dependencies.map(denpendency => new DependencyInfo(
+                            denpendency.modId.toString(), curseforgeRelationT2DependencyT(denpendency.relationType)
+                        )),
                     loaders: (() => {
                         const loaders = [];
                         for (let maybeLoader of item.gameVersions) {
