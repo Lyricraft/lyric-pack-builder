@@ -7,6 +7,8 @@ import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {checkEnum} from "../../public/type.js";
 import {ModVersion} from "../objects/ModVersion.js";
 import {DependencyInfo} from "../objects/DependencyInfo.js";
+import {ModVersionNumber} from "../objects/ModVersionNumber.js";
+import {McVersion} from "../../mc/mcVersion.js";
 
 export class ModrinthApi {
 
@@ -53,7 +55,7 @@ export class ModrinthApi {
             serverSide: obj.server_side,
 
             loaders: obj.loaders,
-            gameVersions: Array.isArray(obj.game_versions) ? obj.game_versions.map(v => Version.fromString(v)) : [],
+            gameVersions: Array.isArray(obj.game_versions) ? obj.game_versions.map(v => McVersion.parseString(v)) : [],
 
             publishedAt: Date.parse(obj.published),
             updatedAt: Date.parse(obj.updated),
@@ -89,12 +91,12 @@ export class ModrinthApi {
 
         if (gameVersions) {
             if (!Array.isArray(gameVersions)){
-                throw new Error(t('error.platformApi.invalidArgsInfo', PubPlatform.MODRINTH, 'gameVersions', 'Version[]', gameVersions));
+                throw new Error(t('error.platformApi.invalidArgsInfo', PubPlatform.MODRINTH, 'gameVersions', 'McVersion[]', gameVersions));
             }
             const versions = [];
             for (const gameVersion of gameVersions){
-                if (!(gameVersion instanceof Version)){
-                    throw new Error(t('error.platformApi.invalidArgsInfo', PubPlatform.MODRINTH, 'gameVersions[*]', 'Version', gameVersion));
+                if (!(gameVersion instanceof McVersion)){
+                    throw new Error(t('error.platformApi.invalidArgsInfo', PubPlatform.MODRINTH, 'gameVersions[*]', 'McVersion', gameVersion));
                 }
                 versions.push(gameVersion.toString());
             }
@@ -129,13 +131,13 @@ export class ModrinthApi {
             array.push(new ModVersion({
                 parent,
                 id: item.id,
-                versionNumber: item.version_number,
+                versionNumber: ModVersionNumber.parseModrinth(item.version_number),
                 versionStage: item.version_type,
                 name: item.name,
                 dependencies: Array.isArray(item.dependencies) ? item.dependencies.map(depend =>
                     new DependencyInfo(depend.project_id, depend.dependency_type, depend.version_id ?? "", depend.file_name ?? "")) : [],
                 loaders: item.loaders,
-                gameVersions: Array.isArray(item.game_versions) ? item.game_versions.map(v => Version.fromString(v)) : [],
+                gameVersions: Array.isArray(item.game_versions) ? item.game_versions.map(v => McVersion.parseString(v)) : [],
                 featured: item.featured,
                 publishedAt: Date.parse(item.published ?? item.date_published), // 看来 Modrinth 言行不一啊（前面是文档里写的，后面是实际请求发现的）
             }));

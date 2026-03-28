@@ -20,8 +20,8 @@ export class ModInfo{
         this.clientSide =  clientSide ?? ModSideSupport.UNKNOWN;
         this.serverSide = serverSide ?? ModSideSupport.UNKNOWN;
 
-        this.loaders = loaders ?? []; // ModLoader
-        this.gameVersions = gameVersions ?? []; // Version
+        this.loaders = loaders ?? []; // ModLoader[]
+        this.gameVersions = gameVersions ?? []; // McVersion[]
 
         this.publishedAt = publishedAt ?? new Date(0);
         this.updatedAt = updatedAt ?? new Date(0);

@@ -16,9 +16,12 @@ export function t(key, ...args){
             throw new Error(`[i18n] 键的翻译参数不足 / Missing translate args for key: ${key}`);
         }
         const arg = args.shift();
+        /*
         if (!stringUsable(arg)){
             throw new Error(`[i18n] 键的翻译参数无效 / Invalid translate args for key: ${key}`);
         }
+        有时可能需要输出 null 和对象之类的。
+         */
         return arg;
     })
     if (args.length > 0){

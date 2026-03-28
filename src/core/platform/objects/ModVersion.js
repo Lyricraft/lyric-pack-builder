@@ -1,4 +1,5 @@
 import {VersionStage, VersionStageName} from "../../mc/mcMods.js";
+import {ModVersionNumber} from "./ModVersionNumber.js";
 
 export class ModVersion{
 
@@ -12,13 +13,13 @@ export class ModVersion{
 
         this.parent = parent ?? null; // ModInfo
         this.id = id ?? "";
-        this.versionNumber = versionNumber ?? "";
+        this.versionNumber = versionNumber ?? new ModVersionNumber("");
         this.versionStage = versionStage ?? new VersionStage(VersionStageName.UNKNOWN);
         this.name = name ?? "";
 
-        this.dependencies = dependencies ?? []; // DependencyInfo
-        this.loaders = loaders ?? []; // ModLoader
-        this.gameVersions = gameVersions ?? []; // Version
+        this.dependencies = dependencies ?? []; // DependencyInfo[]
+        this.loaders = loaders ?? []; // ModLoader[]
+        this.gameVersions = gameVersions ?? []; // McVersion[]
 
         this.featured = featured ?? false;
 

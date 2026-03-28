@@ -16,7 +16,7 @@ export class ModVersionCollection {
     filter(criteriaObj){
 
         for(const key in criteriaObj){
-            if (!checkEnum(VersionCollectionFilterCriteria, key)){
+            if (!checkEnum(ModVersionCollectionFilterCriteria, key)){
                 throw new ArgsError();
             }
             if (Array.isArray(criteriaObj[key])){
@@ -78,27 +78,29 @@ export class ModVersionCollection {
 /*
     使用筛选，请以筛选条件为键，参数为值。
  */
-export const VersionCollectionFilterCriteria = {
+export const ModVersionCollectionFilterCriteria = {
     MOD_LOADER : 'modLoader', // ModLoader / []
-    GAME_VERSION : 'gameVersion', // VersionRange / []
+    GAME_VERSION : 'gameVersion', // T extends McVersion / []
     VERSION_STAGE : 'versionStage', // VersionStage / []
     FEATURED: 'featured', // bool
 }
 
 const filterHandlers = {
-    [VersionCollectionFilterCriteria.MOD_LOADER] : (item, arg) => {
+    [ModVersionCollectionFilterCriteria.MOD_LOADER] : (item, arg) => {
         return item.loaders.includes(arg);
     },
-    [VersionCollectionFilterCriteria.GAME_VERSION] : (item, arg) => {
-        for (const version of item.gameVersions) {
-            if (arg.fit(version)) return true;
+    [ModVersionCollectionFilterCriteria.GAME_VERSION] : (item, arg) => {
+        for (const version of item.gameVersions){
+            if (version.toString() === arg.toString()){
+                return true;
+            }
         }
         return false;
     },
-    [VersionCollectionFilterCriteria.VERSION_STAGE] : (item, arg) => {
+    [ModVersionCollectionFilterCriteria.VERSION_STAGE] : (item, arg) => {
         return item.versionStage.level() === arg.level();
     },
-    [VersionCollectionFilterCriteria.FEATURED] : (item, arg) => {
+    [ModVersionCollectionFilterCriteria.FEATURED] : (item, arg) => {
         return item.featured === arg.featured;
     }
 }

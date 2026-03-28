@@ -22,5 +22,7 @@
     "error.platformApi.invalidArgs": "请求 $ API 的参数错误：$",
     "error.platformApi.invalidArgsInfo": "请求 $ API 的参数错误。$ 应当为 $，但提供了 $",
 
-    "error.fileSystem.failToDeleteFile": "无法删除文件：$"
+    "error.fileSystem.failToDeleteFile": "无法删除文件：$",
+
+    "error.type.invalidMcVersion": "无效的 Minecraft 版本：$"
 }
