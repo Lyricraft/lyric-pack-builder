@@ -5,6 +5,8 @@ export const McContent = {
     MODPACK: 'modpack',
     RESOURCEPACK: 'resourcepack',
     SHADER: 'shader',
+    SAVE: 'save',
+    DATAPACK: 'datapack',
 }
 
 export const PubPlatform = {
@@ -52,5 +54,9 @@ export class VersionStage{
 
     level(){
         return versionStageLevels[this.name];
+    }
+
+    toString() {
+        return this.name;
     }
 }

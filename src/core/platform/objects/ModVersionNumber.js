@@ -18,8 +18,8 @@ export class ModVersionNumber {
         this.version = version; // Version
     }
 
-    static parseModrinth(str) {
-        const segments = str.trim().split(/[-+_]+/);
+    static parseString(str) {
+        const segments = str.trim().split(/[-+_ ]+/);
         let version = null;
         let versionFound = false;
         for (const segment of segments) {

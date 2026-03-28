@@ -10,6 +10,8 @@ import {DependencyInfo} from "../objects/DependencyInfo.js";
 import {ModVersionNumber} from "../objects/ModVersionNumber.js";
 import {McVersion} from "../../mc/mcVersion.js";
 
+const API_BASE = 'https://api.modrinth.com/v2';
+
 export class ModrinthApi {
 
     async test() {
@@ -30,7 +32,7 @@ export class ModrinthApi {
     }
 
     async modInfo(idOrSlug) {
-        const requestUrl = new URL(`https://api.modrinth.com/v2/project/${idOrSlug}`);
+        const requestUrl = new URL(`${API_BASE}/project/${idOrSlug}`);
 
         let obj;
         try {
@@ -67,13 +69,13 @@ export class ModrinthApi {
     /*
         args:
             loaders: ModLoader[]
-            gameVersions: Version[]
+            gameVersions: McVersion[]
             featured: bool
      */
     async modVersions(parent, args = {}) {
         const {loaders, gameVersions, featured} = args;
 
-        const requestUrl = new URL(`https://api.modrinth.com/v2/project/${parent.id}/version`);
+        const requestUrl = new URL(`${API_BASE}/project/${parent.id}/version`);
 
         requestUrl.searchParams.set('include_changelog', JSON.stringify(false));
 
@@ -131,7 +133,7 @@ export class ModrinthApi {
             array.push(new ModVersion({
                 parent,
                 id: item.id,
-                versionNumber: ModVersionNumber.parseModrinth(item.version_number),
+                versionNumber: ModVersionNumber.parseString(item.version_number),
                 versionStage: new VersionStage(item.version_type),
                 name: item.name,
                 dependencies: Array.isArray(item.dependencies) ? item.dependencies.map(depend =>

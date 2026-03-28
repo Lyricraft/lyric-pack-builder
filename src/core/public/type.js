@@ -114,3 +114,70 @@ export function normalize(obj, sortArrays = false) {
 
     return JSON.stringify(canonicalize(obj));
 }
+
+export class BiMap {
+    constructor() {
+        this.forward = new Map(); // key → value
+        this.backward = new Map(); // value → key
+    }
+
+    // 设置键值对（值重复时覆盖旧键）
+    set(key, value) {
+        // 先删除旧值关联
+        if (this.backward.has(value)) {
+            this.forward.delete(this.backward.get(value));
+        }
+        this.forward.set(key, value);
+        this.backward.set(value, key);
+        return this;
+    }
+
+    // 正向查找：key → value
+    get(key) {
+        return this.forward.get(key);
+    }
+
+    // 反向查找：value → key
+    getKey(value) {
+        return this.backward.get(value);
+    }
+
+    // 删除键
+    delete(key) {
+        const value = this.forward.get(key);
+        if (value !== undefined) {
+            this.forward.delete(key);
+            this.backward.delete(value);
+            return true;
+        }
+        return false;
+    }
+
+    // 删除值
+    deleteValue(value) {
+        const key = this.backward.get(value);
+        if (key !== undefined) {
+            this.backward.delete(value);
+            this.forward.delete(key);
+            return true;
+        }
+        return false;
+    }
+
+    has(key) {
+        return this.forward.has(key);
+    }
+
+    hasValue(value) {
+        return this.backward.has(value);
+    }
+
+    clear() {
+        this.forward.clear();
+        this.backward.clear();
+    }
+
+    get size() {
+        return this.forward.size;
+    }
+}
