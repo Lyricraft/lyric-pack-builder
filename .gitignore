@@ -7,6 +7,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+logs/
+src/logs/
+
 # Environment files
 src/.env
 .env.*
