@@ -1,4 +1,3 @@
-import { createFile, fileExists, regularFileExists } from "../public/fileSystem.js";
 import fs from "node:fs/promises";
 import fss from "node:fs";
 import path from "path";
@@ -100,6 +99,7 @@ process.on('exit', () => {
 });
 
 // 未捕获异常（必须同步刷日志，否则会丢）
+/*
 process.on('uncaughtException', (err) => {
     FILE_LOGGER.log('FATAL', '未经捕获的异常，程序将停止。Uncaught exception, shutting down.');
     FILE_LOGGER.log('FATAL', err.stack);
@@ -107,6 +107,8 @@ process.on('uncaughtException', (err) => {
     FILE_LOGGER.endStream();
     process.exit(1);
 });
+    先把这里注释起来，正式发布再用。不然调试看不到抛错信息很头疼的。
+ */
 
 // SIGINT Ctrl+C
 process.on('SIGINT', () => {

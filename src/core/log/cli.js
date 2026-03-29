@@ -25,9 +25,11 @@ class RewriteState extends State {
     constructor(line) {
         super();
         this.line = line;
+        this.lineMoved = false; // 是不是移到了可更改部分最下面一行，也就是是不是输出了空行。
     }
     enter() {
-        process.stdout.write('\n'.repeat(this.line));
+        this.lineMoved = false;
+        // 不是在这里输出空行，改成真渲染的时候输出空行，这样就可以避免出现意外空行。
     }
     leave() {
         // 无须进行任何操作，因为每次渲染都会换到可重写部分结束后的一行。
@@ -71,7 +73,10 @@ class InputState extends State {
     leave() {
         this.reader.close();
         // 先把积压的普通行输出输出出去
-        CLI.shiftState(LINE_STATE);
+        // CLI.shiftState(LINE_STATE);
+        CLI.state = LINE_STATE;
+        CLI.state.enter();
+        // ↑
         if (this.outputQueue.length > 0) {
             for (const item of this.outputQueue) {
                 CLI.outLine(item.type, ...item.args);
@@ -81,7 +86,10 @@ class InputState extends State {
         if (this.inputQueue.length > 0) {
             const nextInput = this.inputQueue.shift();
             nextInput.inputQueue = this.inputQueue;
-            CLI.shiftState(nextInput);
+            // CLI.shiftState(nextInput);
+            CLI.state = nextInput;
+            CLI.state.enter();
+            //↑
         }
         // 这里不管是不是有 RewriteState 在等待，毕竟有也不是真的等待。它下一次刷新行时，会自动切换过来显示的。
         // 这一点东西不显示无人在意（连我都不在意），毕竟也写出到文件日志了。大大降低编码复杂度，减少 BUG 概率。
@@ -121,6 +129,11 @@ class Rewriter {
     }
 
     #render() {
+        if (!this.state.lineMoved) {
+            // 在还没有输出空行时输出空行，以把光标移到可重写部分最下面，便于后面上移和重写。
+            process.stdout.write('\n'.repeat(this.state.line));
+            this.state.lineMoved = true;
+        }
         process.stdout.write(`\x1B[${this.state.line}A`); // 上移光标
         for(const line of this.lines) {
             // 清除整行，输出，然后换行
