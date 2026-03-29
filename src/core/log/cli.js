@@ -1,6 +1,7 @@
 import {FILE_LOGGER} from "./fileLogger.js";
 import {logHandles, LogType} from "./logTypes.js";
 import {ArgsError} from "../public/errors.js";
+import * as readline from "node:readline";
 
 /*
     我们正尝试使用一系列神奇的方法来包装上世纪传下来的命令行界面，力争给客户最丝滑的体验。
@@ -34,20 +35,56 @@ class RewriteState extends State {
 }
 
 class InputState extends State {
-    constructor(prompt, checkFunc) {
+    constructor(prompt, callback, checkFunc = null) {
         super();
         this.prompt = prompt;
+        this.callback = callback;
         this.checkFunc = checkFunc;
-        this.outputQueue = [];
+        this.outputQueue = []; // {type: LogType, args: string[]}
+        this.inputQueue = []; // InputState
+        this.reader = null;
     }
-    enter() {}
+    enter() {
+        const reader = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        })
+        this.reader = reader;
+        const question = () => {
+            FILE_LOGGER.log(LogType.LOG, '?', this.prompt);
+            reader.question(this.prompt, (answer) => {
+                FILE_LOGGER.log(LogType.LOG, '>', answer);
+                if (!this.checkFunc) {
+                    this.callback(answer);
+                } else {
+                    if (this.checkFunc(answer)) {
+                        this.callback(answer);
+                    } else {
+                        // 再来一遍！
+                        setTimeout(question, 0); // 不会爆栈啦！
+                    }
+                }
+            })
+        }
+        question();
+    }
     leave() {
-
+        this.reader.close();
+        // 先把积压的普通行输出输出出去
+        CLI.shiftState(LINE_STATE);
         if (this.outputQueue.length > 0) {
             for (const item of this.outputQueue) {
                 CLI.outLine(item.type, ...item.args);
             }
         }
+        // 然后如果还有要输入的东西，再让客户输
+        if (this.inputQueue.length > 0) {
+            const nextInput = this.inputQueue.shift();
+            nextInput.inputQueue = this.inputQueue;
+            CLI.shiftState(nextInput);
+        }
+        // 这里不管是不是有 RewriteState 在等待，毕竟有也不是真的等待。它下一次刷新行时，会自动切换过来显示的。
+        // 这一点东西不显示无人在意（连我都不在意），毕竟也写出到文件日志了。大大降低编码复杂度，减少 BUG 概率。
     }
 }
 
@@ -97,10 +134,6 @@ class Rewriter {
         if (CLI.state instanceof RewriteState && CLI.state.line === this.state.line) {
             CLI.shiftState(LINE_STATE);
         }
-        // 豆包非要我写下面两行。
-        this.lines = null;
-        this.state = null;
-        // ↑不是，这玩意真的有必要自己写吗！
         return null;
     }
 }
@@ -143,6 +176,23 @@ class Cli {
             this.shiftState(rewrite);
         }
         return new Rewriter(rewrite);
+    }
+
+    async input(prompt, checkFunc = null) {
+        if (checkFunc && typeof checkFunc !== 'function') {
+            throw new ArgsError('[CLI] Wrong check func');
+        }
+        return new Promise((resolve) => {
+            const newState = new InputState(prompt,  (value) => {
+                newState.leave();
+                resolve(value);
+            }, checkFunc);
+            if (this.state instanceof InputState) {
+                this.state.inputQueue.push(newState);
+            } else {
+                this.shiftState(newState);
+            }
+        })
     }
 }
 
