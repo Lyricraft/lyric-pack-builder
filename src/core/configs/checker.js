@@ -1,7 +1,13 @@
-import {ConfigEmptyArrayError, ConfigFieldTypeError} from "./errors.js";
-import {checkEnum} from "../public/type.js";
+import {ConfigEmptyArrayError, ConfigFieldMissingError, ConfigFieldTypeError} from "./errors.js";
+import {checkEnum, StringType, stringUsable} from "../public/type.js";
 
-export function checkConfigArray(array, file, field, type, checkFunc, allowEmpty = false) {
+export function checkConfigArray(array, file, field, type, checkFunc, allowEmpty = false, optional = false) {
+    if (optional && !array) {
+        return null;
+    }
+    if (!array) {
+        throw new ConfigFieldMissingError(file, field);
+    }
     if (!Array.isArray(array)) {
         throw new ConfigFieldTypeError(file, field, `${type}[]`, array);
     }
@@ -13,12 +19,27 @@ export function checkConfigArray(array, file, field, type, checkFunc, allowEmpty
             throw new ConfigFieldTypeError(file, `${field}[*]`, type, item);
         }
     }
-    return true;
+    return array;
 }
 
-export function checkConfigEnum(str, file, field, type, enumType) {
-    if (!checkEnum(enumType, str)) {
-        throw new ConfigFieldTypeError(file, field, `string(${type})`, str);
+export function checkConfigField(obj, file, field, type, checkFunc, optional = false) {
+    if (optional && !obj) {
+        return null;
     }
-    return true;
+    if (!obj) {
+        throw new ConfigFieldMissingError(file, field);
+    }
+    if (!checkFunc(obj)) {
+        throw new ConfigFieldTypeError(file, field, type, obj);
+    }
+    return obj;
+}
+
+export function checkConfigEnum(str, file, field, type, enumType, optional = false) {
+    return checkConfigField(str, file, field, `string(${type})`, (obj) => checkEnum(enumType, obj), optional);
+}
+
+export function checkConfigString(str, file, field, type = "", stringType = StringType.STRING, optional = false) {
+    return checkConfigField(str, file, field, `string${stringUsable(type) ? `(${type})` : ""}`,
+        (obj) => stringUsable(obj, stringType), optional);
 }

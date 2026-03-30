@@ -5,7 +5,7 @@ import {checkConfigArray} from "../checker.js";
 import {checkEnum} from "../../public/type.js";
 import {ModLoader, PackFormat} from "../../mc/mcMods.js";
 
-export class BuildTarget {
+export class PackTarget {
     constructor(mcVersions, loaders, formats) {
         this.mcVersions = mcVersions; // McVersion[]
         this.loaders = loaders; // ModLoader[]
@@ -42,6 +42,6 @@ export class BuildTarget {
         checkConfigArray(obj.formats, 'target', 'formats', 'string(PackFormat)',
             (item) => checkEnum(PackFormat, item));
 
-        return new BuildTarget(mcVersions, obj.loaders, obj.formats);
+        return new PackTarget(mcVersions, obj.loaders, obj.formats);
     }
 }
