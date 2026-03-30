@@ -12,7 +12,7 @@ import {HttpError} from "../../network/HttpError.js";
 import {ModInfo} from "../objects/ModInfo.js";
 import {ModVersion} from "../objects/ModVersion.js";
 import {ModVersionNumber} from "../objects/ModVersionNumber.js";
-import {Version, VERSION_PATTERN} from "../../objects/version.js";
+import {Version, VERSION_PATTERN} from "../../objects/versions.js";
 import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {CurseforgeModVersionPage} from "./CurseforgeModVersionPage.js";
 import {DependencyInfo, DependencyType} from "../objects/DependencyInfo.js";

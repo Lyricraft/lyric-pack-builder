@@ -1,6 +1,6 @@
 import {checkEnum} from "../../public/type.js";
 import {ArgsError, TypedError} from "../../public/errors.js";
-import {Version} from "../../objects/version.js";
+import {Version} from "../../objects/versions.js";
 
 // 暂且不过多写类型检验了，调用的时候注意下就好。
 

@@ -1,6 +1,6 @@
 import {checkEnum} from "../../public/type.js";
 import {ModLoader, VersionStage, VersionStageName} from "../../mc/mcMods.js";
-import {Version, VERSION_PATTERN, VersionRange} from "../../objects/version.js";
+import {Version, VERSION_PATTERN, VersionRange} from "../../objects/versions.js";
 import {ModVersion} from "./ModVersion.js";
 
 /*

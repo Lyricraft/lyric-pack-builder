@@ -1,7 +1,7 @@
 import axios from "axios";
 import {t} from "../../i18n/translate.js";
 import {ModInfo} from "../objects/ModInfo.js";
-import {Version} from "../../objects/version.js";
+import {Version} from "../../objects/versions.js";
 import {PubPlatform, ModLoader, VersionStage} from "../../mc/mcMods.js";
 import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {checkEnum} from "../../public/type.js";

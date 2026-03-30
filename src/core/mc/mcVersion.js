@@ -1,4 +1,4 @@
-import {Version, VERSION_PATTERN} from "../objects/version.js";
+import {Version, VERSION_PATTERN} from "../objects/versions.js";
 import {padZero} from "../public/string.js";
 import {stringUsable} from "../public/type.js";
 import {ArgsError} from "../public/errors.js";
