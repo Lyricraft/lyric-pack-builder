@@ -10,8 +10,10 @@ export class ConfigError extends TypedError {
     static TYPE = 'config';
 
     constructor(message, subType, filePath = "", fieldPath = "") {
-        super(ConfigError.TYPE, message, {filePath, objPath: fieldPath});
+        super(ConfigError.TYPE, message);
         this.subType = subType;
+        this.filePath = filePath;
+        this.fieldPath = fieldPath;
     }
 }
 

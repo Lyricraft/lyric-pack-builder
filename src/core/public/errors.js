@@ -3,7 +3,13 @@ export class TypedError extends Error {
     constructor(type, message = type, obj = {}) {
         super(message);
         this.type = type;
-        this.obj = obj;
+        // ↓尽量避免使用
+        for (const key in obj) {
+            if (key === 'type') {
+                continue;
+            }
+            this[key] = obj[key];
+        }
     }
 }
 
