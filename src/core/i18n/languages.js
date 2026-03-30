@@ -8,7 +8,7 @@ import {fileURLToPath} from "node:url";
         正文部分以 $ 作参数占位符。
  */
 
-const modulePath = path.dirname(fileURLToPath(import.meta.url));
+const mainPath = path.dirname(process.argv[1]); // 入口脚本路径
 
 const defaultLanguage = 'zh_cn';
 let language = defaultLanguage;
@@ -23,7 +23,7 @@ try{
 }
 
 async function loadLanguageFromFile(lang){
-    const filePath = path.join(modulePath, 'lang', `${lang}.json`);
+    const filePath = path.join(mainPath, 'lang', `${lang}.json`);
     let file;
     try {
         file = await fs.readFile(filePath, 'utf8');

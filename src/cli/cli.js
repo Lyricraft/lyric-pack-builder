@@ -1,6 +1,6 @@
-import {FILE_LOGGER} from "./fileLogger.js";
-import {logHandles, LogType} from "./logTypes.js";
-import {ArgsError} from "../public/errors.js";
+import {FILE_LOGGER} from "../core/log/fileLogger.js";
+import {logHandles, LogType} from "../core/log/logTypes.js";
+import {ArgsError} from "../core/public/errors.js";
 import * as readline from "node:readline";
 
 /*

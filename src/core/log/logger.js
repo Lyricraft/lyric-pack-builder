@@ -1,4 +1,4 @@
-import {CLI} from "./cli.js";
+import {CLI} from "../../cli/cli.js";
 import {LogType} from "./logTypes.js";
 
 /*

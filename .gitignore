@@ -8,10 +8,12 @@ yarn-error.log*
 pnpm-debug.log*
 
 logs/
-src/logs/
+
+# Run
+run/
 
 # Environment files
-src/.env
+.env
 .env.*
 !.env.example
 

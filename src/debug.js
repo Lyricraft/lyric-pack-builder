@@ -1,6 +1,6 @@
 import logger from "./core/log/logger.js";
 import {sleep} from "./core/public/control.js";
-import {CLI} from "./core/log/cli.js";
+import {CLI} from "./cli/cli.js";
 import {stringUsable} from "./core/public/type.js";
 import {FILE_LOGGER} from "./core/log/fileLogger.js";
 
