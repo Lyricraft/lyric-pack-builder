@@ -14,6 +14,12 @@ export const PubPlatform = {
     CURSEFORGE: 'curseforge',
 }
 
+export const PackFormat = {
+    MODRINTH: 'modrinth',
+    CURSEFORGE: 'curseforge',
+    MCBBS: 'mcbbs',
+}
+
 export const ModSide = {
     SERVER: 'server',
     CLIENT: 'client',
