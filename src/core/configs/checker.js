@@ -30,9 +30,9 @@ export function checkConfigArray(array, parent, field, type, checkFunc = null, a
     return array;
 }
 
-export function checkConfigField(obj, parent, field, type, checkFunc, optional = false) {
+export function checkConfigField(obj, parent, field, type, checkFunc, optional = false, defaultValue = null) {
     if (optional && !obj) {
-        return null;
+        return defaultValue;
     }
     if (!obj) {
         throw new ConfigFieldMissingError(parent, field);
