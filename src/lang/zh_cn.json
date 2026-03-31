@@ -38,6 +38,7 @@
     "error.configs.fieldType": "配置文件 $ 中的项 $ 应该为 $，但提供了 $",
     "error.configs.emptyArray": "配置文件 $ 中的数组 $ 不能为空",
     "error.configs.fieldMsg": "配置文件 $ 中的项 $ 配置有误：\n$",
+    "error.configs.illegalCharacters": "配置文件 $ 中的项 $ 包含非法字符：$",
 
     "error.configs.invalidConditionType": "无法识别的条件类型：$",
     "error.configs.multipleConditionTypes": "条件被定义了多个类型：$",

@@ -17,6 +17,12 @@ export class ConfigError extends TypedError {
     }
 }
 
+export class ConfigFileMissingError extends ConfigError {
+    constructor(file) {
+        super(ConfigErrorSubType.FILE, t('error.configs.fileMissing', file), file);
+    }
+}
+
 export class ConfigFieldMissingError extends  ConfigError {
     constructor(file, field) {
         super(ConfigErrorSubType.FIELD, t('error.configs.fieldMissing', file, field), file, field);
