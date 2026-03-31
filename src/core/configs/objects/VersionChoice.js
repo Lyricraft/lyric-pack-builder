@@ -12,17 +12,16 @@ export const AutoVersionChoice = {
     STATIC: 'static',
 }
 
+export const DEFAULT_AUTO_VERSION_CHOICE = AutoVersionChoice.LATEST;
+
 export class VersionChoice {
     constructor(version, choice) {
         this.version = version;
         this.choice = choice;
     }
 
-    static fromObj(obj, defaultChoice = AutoVersionChoice.LATEST) {
+    static fromObj(obj, defaultChoice = DEFAULT_AUTO_VERSION_CHOICE) {
         checkConfigEnum(obj.choice, "", 'choice', 'string(AutoVersionChoice)', AutoVersionChoice, true);
-        if (!obj.choice) {
-            obj.choice = defaultChoice;
-        }
 
         if (obj.choice === AutoVersionChoice.STATIC && !obj.version) {
             throw new ConfigFieldError("", 'version', t('error.configs.choiceMissingWithStaticChoice'));
@@ -49,6 +48,6 @@ export class VersionChoice {
             }
         }
 
-        return new VersionChoice(version, obj.choice);
+        return new VersionChoice(version, obj.choice??defaultChoice);
     }
 }

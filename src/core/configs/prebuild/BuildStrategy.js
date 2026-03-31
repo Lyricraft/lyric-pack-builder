@@ -1,4 +1,5 @@
 import {checkConfigArray, checkConfigEnum} from "../checker.js";
+import {AutoVersionChoice, DEFAULT_AUTO_VERSION_CHOICE} from "../objects/VersionChoice.js";
 
 export const DependencyStrategy = {
     SKIP: 'skip',
@@ -6,6 +7,8 @@ export const DependencyStrategy = {
     WARN: 'warn',
     STOP: 'stop',
 }
+
+const STRATEGY = 'strategy';
 
 export class BuildStrategy {
     constructor(options) {
@@ -17,8 +20,11 @@ export class BuildStrategy {
     static fromObj(obj) {
         const options = {};
 
-        checkConfigEnum(obj.dependencies, 'strategy', 'dependencies', 'DependencyStrategy', DependencyStrategy)
+        checkConfigEnum(obj.dependencies, STRATEGY, 'dependencies', 'DependencyStrategy', DependencyStrategy)
         options.dependencies = obj.dependencies;
+
+        checkConfigEnum(obj.autoVersionChoice, STRATEGY, 'autoVersionChoice', 'AutoVersionChoice', AutoVersionChoice, true);
+        options.autoVersionChoice = obj.autoVersionChoice??DEFAULT_AUTO_VERSION_CHOICE;
 
         return new BuildStrategy(options);
     }
