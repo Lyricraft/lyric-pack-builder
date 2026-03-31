@@ -17,9 +17,22 @@ export class Condition {
         this.arg = obj[type];
     }
 
-    static from(obj, map = conditionMap) {
-        for (let key in obj) {
-            if (map.has(key)) return new (map.get(key))(obj);
+    static from(obj, map = conditionMap, strict = false) {
+        let used = null;
+        for (const key in obj) {
+            if (map.has(key)) {
+                if (strict) {
+                    if (used) {
+                        throw new ConfigError(t('error.configs.multipleConditionTypes', obj), ConfigErrorSubType.FIELD);
+                    }
+                    used = new (map.get(key))(obj, map);
+                } else {
+                    return new (map.get(key))(obj, map)
+                }
+            }
+        }
+        if (used) {
+            return used;
         }
         throw new ConfigError(t('error.configs.invalidConditionType', obj), ConfigErrorSubType.FIELD);
     }
@@ -65,7 +78,7 @@ class NotCondition extends Condition {
         if (Array.isArray(this.arg)) {
             this.arg = new AndCondition({and: this.arg});
         }
-        if (typeof this.arg === 'object') {
+        if (this.arg && typeof this.arg === 'object') {
             this.arg = Condition.from(this.arg, map);
             return;
         }
@@ -85,6 +98,9 @@ class AndCondition extends Condition {
             throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'Condition[]', this.arg), ConfigErrorSubType.FIELD);
         }
         for (let i = 0; i < this.arg.length; i++) {
+            if (!this.arg[i] || typeof this.arg[i] !== 'object') {
+                throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[]`, 'Condition', this.arg), ConfigErrorSubType.FIELD);
+            }
             this.arg[i] = Condition.from(this.arg[i], map);
         }
     }
@@ -104,6 +120,9 @@ class OrCondition extends Condition {
             throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'Condition[]', this.arg), ConfigErrorSubType.FIELD);
         }
         for (let i = 0; i < this.arg.length; i++) {
+            if (!this.arg[i] || typeof this.arg[i] !== 'object') {
+                throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[]`, 'Condition', this.arg), ConfigErrorSubType.FIELD);
+            }
             this.arg[i] = Condition.from(this.arg[i], map);
         }
     }
@@ -149,8 +168,8 @@ class ModLoaderCondition extends Condition {
         if (!Array.isArray(this.arg)) {
             this.arg = new Array(this.arg);
         }
-        for (let i = 0; i < this.arg.length; i++) {
-            if (!checkEnum(ModLoader, this.arg[i])) {
+        for (const item of this.arg) {
+            if (!checkEnum(ModLoader, item)) {
                 throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'ModLoader / []', this.arg), ConfigErrorSubType.FIELD);
             }
         }
@@ -171,8 +190,8 @@ class PackFormatCondition extends Condition {
         if (!Array.isArray(this.arg)) {
             this.arg = new Array(this.arg);
         }
-        for (let i = 0; i < this.arg.length; i++) {
-            if (!checkEnum(PackFormat, this.arg[i])) {
+        for (const item of this.arg) {
+            if (!checkEnum(PackFormat, item)) {
                 throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'PackFormat / []', this.arg), ConfigErrorSubType.FIELD);
             }
         }
@@ -206,7 +225,7 @@ class ReferenceCondition extends Condition {
 
         for (const item of this.arg) {
             if (tracker?.dependency && !tracker.dependency[this.type].includes(item)) {
-                tracker.dependency.push(item);
+                tracker.dependency[this.type].push(item);
             }
 
             const result = this.testOne(item, context);

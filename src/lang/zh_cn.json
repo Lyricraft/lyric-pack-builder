@@ -40,6 +40,7 @@
     "error.configs.fieldMsg": "配置文件 $ 中的项 $ 配置有误：\n$",
 
     "error.configs.invalidConditionType": "无法识别的条件类型：$",
+    "error.configs.multipleConditionTypes": "条件被定义了多个类型：$",
     "error.configs.invalidConditionArgs": "条件 $ 的参数应该是 $，但提供了 $",
 
     "error.configs.noVersionInRange": "区间内没有可用的版本"
