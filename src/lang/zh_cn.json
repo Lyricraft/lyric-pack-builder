@@ -49,6 +49,9 @@
     "error.configs.multipleConditionTypes": "条件被定义了多个类型：$",
     "error.configs.invalidConditionArgs": "条件 $ 的参数应该是 $，但提供了 $",
 
+    "error.configs.conditionSelfDependency": "条件出现自指依赖：资源组 $ 的条件依赖自身的 $ 对象 $",
+    "error.configs,conditionCircularDependency": "条件出现循环依赖：资源组 $ 的条件出现了循环依赖，依赖链：\n$",
+
     "error.configs.noVersionInRange": "区间内没有可用的版本",
 
     "error.configs.choiceMissingWithStaticChoice": "版本选择规则错误：自动选择规则为 static，但没有提供条件版本",

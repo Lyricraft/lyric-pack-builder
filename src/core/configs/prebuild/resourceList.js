@@ -100,7 +100,7 @@ export class ResourceOption {
     constructor(id, condition, resources) {
         this.id = id;
         this.condition = condition;
-        this.resources = resources;
+        this.resources = resources; // Resource[]
     }
 
     static fromObj(obj){
@@ -128,7 +128,7 @@ export class ResourceOption {
 export class ResourceGroup {
     constructor(id, options, required) {
         this.id = id;
-        this.options = options;
+        this.options = options; // Map<ResourceOption>
         this.required = required;
     }
 
@@ -222,10 +222,10 @@ export class ResourceList {
 
         // 将使用到的 ResourceLike 的 id 提取出来
         const resourceLikesMap = new Map(); // resourceId -> groupId[]
-        for (const groupId of unsortedGroupsMap) {
+        for (const groupId of unsortedGroupsMap.keys()) {
             const group = unsortedGroupsMap[groupId];
-            for (const option of group) {
-                for (const resourceLike of option) {
+            for (const option of group.options.values()) { // group.options 是 Map
+                for (const resourceLike of option.resources) { // option.resouces 是 Array
                     if (!resourceLikesMap.has(resourceLike.id)) {
                         // 没有就创建个成员
                         resourceLikesMap.set(resourceLike.id, [groupId]);
@@ -237,11 +237,53 @@ export class ResourceList {
             }
         }
 
-        // 按照条件依赖关系给
-        const groupsIdArray = [];
-        const stack = []; // 这次咱们用栈模拟
+        // 按照条件依赖关系给排序
+        const groupsArray = []; // 实际上是倒序
+        while (resourceLikesMap.size > 0) {
+            const key = unsortedGroupsMap.keys().next().value; // 拿到第一个键
+            moveGroupToSortingList(key, 0, groupsArray, unsortedGroupsMap, resourceLikesMap, []); // 加到第一个
+        }
 
 
     }
 }
 
+function moveGroupToSortingList(key, index, groupArray, unsortedGroupMap, resourceLikesMap, chain) {
+    // 先移动到指定位置
+    const group = unsortedGroupMap.get(key);
+    groupArray.splice(index, 0, group);
+    unsortedGroupMap.delete(key);
+
+    // 查找各种依赖
+    const tracker = {dependency: {}};
+    for (const option of group.options.values()) {
+        option.condition.test({}, tracker);
+    }
+
+    // 判断自指
+    // 组自指
+    if (tracker.dependency.group && tracker.dependency.group.includes(group.id)) {
+        throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Group', group.id), `groups[${group.id}].options[*].conditions`);
+    }
+    // 选项自指
+    if (tracker.dependency.option) {
+        for (const option of group.options.values()) {
+            if (tracker.dependency.option.includes(`${group.id}.${option.id}`)) {
+                throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Option', option.id), `groups[${group.id}].options[*].conditions`);
+            }
+        }
+    }
+    // 资源自指
+    if (tracker.dependency.resource) {
+        for (const resource of tracker.dependency.resource) {
+            if (resourceLikesMap.get(resource) && resourceLikesMap.get(resource).includes(group.id)) {
+                throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Resource', resource), `groups[${group.id}].options[*].conditions`);
+            }
+        }
+    }
+
+    // 查看依赖是否存在
+
+    // 对依赖排序来说，看来我想的还不够，有逻辑漏洞，今天肯定完成不了了，我还得想更好的方法。
+
+}
