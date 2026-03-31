@@ -1,4 +1,4 @@
-import {checkConfigEnum, checkConfigString} from "../checker.js";
+import {checkConfigEnum, checkConfigStringType} from "../checker.js";
 import {ConfigFieldError} from "../errors.js";
 import {t} from "../../i18n/translate.js";
 import {stringUsable} from "../../public/type.js";
@@ -31,7 +31,7 @@ export class VersionChoice {
         if (obj.version) {
             version = {};
             for (const key in obj.version) {
-                checkConfigString(key, "VersionChoice", 'version#key');
+                checkConfigStringType(key, "VersionChoice", 'version#key');
 
                 if (!obj.version[key] || typeof obj.version[key] !== 'object') {
                     throw new ConfigFieldError("VersionChoice", 'version#value', t('error.configs.invalidVersionCondition', obj.version[key]));

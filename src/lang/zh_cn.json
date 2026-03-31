@@ -43,6 +43,7 @@
     "error.configs.fieldMsg": "$ 的项 $ 配置有误：\n$",
     "error.configs.illegalCharacters": "$ 的项 $ 包含非法字符：$",
 
+    "error.configs.conditionNotAnObject": "单个条件必须是一个对象，但提供了：$",
     "error.configs.invalidConditionType": "无法识别的条件类型：$",
     "error.configs.multipleConditionTypes": "条件被定义了多个类型：$",
     "error.configs.invalidConditionArgs": "条件 $ 的参数应该是 $，但提供了 $",
