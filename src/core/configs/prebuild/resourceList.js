@@ -72,7 +72,7 @@ ResourceLike.fromField = function(field, resourceDirPath) {
         let id;
         if (stringUsable(field.id)) {
             if (!stringUsable(field.id, StringType.FILE_NAME)) {
-                throw new ConfigFieldError('option', 'resources[*].id', t('error.configs.illegalCharacters', "", 'id', field.id));
+                throw new ConfigFieldError('Option', 'resources[*].id', t('error.configs.illegalCharacters', "", 'id', field.id));
             }
             id = `inline:${field.id}`;
         } else {
@@ -80,7 +80,7 @@ ResourceLike.fromField = function(field, resourceDirPath) {
         }
         resourceLike = new InlineResource(id, field);
     } else {
-        throw new ConfigFieldTypeError('option', 'resources[*]', 'string(ResourceConfigPath) / object(InlineResourceObj)', field);
+        throw new ConfigFieldTypeError('Option', 'resources[*]', 'string(ResourceConfigPath) / object(InlineResourceObj)', field);
     }
     return resourceLike;
 }

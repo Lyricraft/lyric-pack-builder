@@ -8,8 +8,6 @@ export const DependencyStrategy = {
     STOP: 'stop',
 }
 
-const STRATEGY = 'strategy';
-
 export class BuildStrategy {
     constructor(options) {
         for (const key in options) {
@@ -20,10 +18,10 @@ export class BuildStrategy {
     static fromObj(obj) {
         const options = {};
 
-        checkConfigEnum(obj.dependencies, STRATEGY, 'dependencies', 'DependencyStrategy', DependencyStrategy)
+        checkConfigEnum(obj.dependencies, 'Strategy', 'dependencies', 'DependencyStrategy', DependencyStrategy)
         options.dependencies = obj.dependencies;
 
-        checkConfigEnum(obj.autoVersionChoice, STRATEGY, 'autoVersionChoice', 'AutoVersionChoice', AutoVersionChoice, true);
+        checkConfigEnum(obj.autoVersionChoice, 'Strategy', 'autoVersionChoice', 'AutoVersionChoice', AutoVersionChoice, true);
         options.autoVersionChoice = obj.autoVersionChoice??DEFAULT_AUTO_VERSION_CHOICE;
 
         return new BuildStrategy(options);

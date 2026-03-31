@@ -21,27 +21,27 @@ export class VersionChoice {
     }
 
     static fromObj(obj, defaultChoice = DEFAULT_AUTO_VERSION_CHOICE) {
-        checkConfigEnum(obj.choice, "", 'choice', 'string(AutoVersionChoice)', AutoVersionChoice, true);
+        checkConfigEnum(obj.choice, "VersionChoice", 'choice', 'string(AutoVersionChoice)', AutoVersionChoice, true);
 
         if (obj.choice === AutoVersionChoice.STATIC && !obj.version) {
-            throw new ConfigFieldError("", 'version', t('error.configs.choiceMissingWithStaticChoice'));
+            throw new ConfigFieldError("VersionChoice", 'version', t('error.configs.choiceMissingWithStaticChoice'));
         }
 
         let version;
         if (obj.version) {
             version = {};
             for (const key in obj.version) {
-                checkConfigString(key, "", 'version#key');
+                checkConfigString(key, "VersionChoice", 'version#key');
 
                 if (!obj.version[key] || typeof obj.version[key] !== 'object') {
-                    throw new ConfigFieldError("", 'version#value', t('error.configs.invalidVersionCondition', obj.version[key]));
+                    throw new ConfigFieldError("VersionChoice", 'version#value', t('error.configs.invalidVersionCondition', obj.version[key]));
                 }
 
                 let condition;
                 try {
                     condition = Condition.from(obj.version[key]);
                 } catch (e) {
-                    throw new ConfigFieldError("", 'version#value', t('error.configs.invalidVersionConditionMsg', e.message));
+                    throw new ConfigFieldError("VersionChoice", 'version#value', t('error.configs.invalidVersionConditionMsg', e.message));
                 }
 
                 version[key] = condition;

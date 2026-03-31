@@ -34,11 +34,14 @@
 
     "error.configs.fileMissing": "配置文件 $ 不存在",
     "error.configs.invalidFileMsg": "配置文件 $ 无效或已损坏：\n$",
-    "error.configs.fieldMissing": "配置文件 $ 中的必要项 $ 缺失",
-    "error.configs.fieldType": "配置文件 $ 中的项 $ 应该为 $，但提供了 $",
-    "error.configs.emptyArray": "配置文件 $ 中的数组 $ 不能为空",
-    "error.configs.fieldMsg": "配置文件 $ 中的项 $ 配置有误：\n$",
-    "error.configs.illegalCharacters": "配置文件 $ 中的项 $ 包含非法字符：$",
+    "error.configs.fileInnerMsg": "配置文件 $ 内部存在错误：\n$",
+
+    "error.configs.fieldInnerMsg": "$ 的项 $ 内部存在错误：\n$",
+    "error.configs.fieldMissing": "$ 的必要项 $ 缺失",
+    "error.configs.fieldType": "$ 的项 $ 应该为 $，但提供了 $",
+    "error.configs.emptyArray": "$ 的数组 $ 不能为空",
+    "error.configs.fieldMsg": "$ 的项 $ 配置有误：\n$",
+    "error.configs.illegalCharacters": "$ 的项 $ 包含非法字符：$",
 
     "error.configs.invalidConditionType": "无法识别的条件类型：$",
     "error.configs.multipleConditionTypes": "条件被定义了多个类型：$",
