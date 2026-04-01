@@ -51,6 +51,9 @@
 
     "error.configs.conditionSelfDependency": "条件出现自指依赖：资源组 $ 的条件依赖自身的 $ 对象 $",
     "error.configs,conditionCircularDependency": "条件出现循环依赖：资源组 $ 的条件出现了循环依赖，依赖链：\n$",
+    "error.configs.conditionDependencyNotFound": "条件依赖的对象不存在：资源组 $ 的条件依赖了 $ 对象 $，但后者不存在",
+    "error.configs.conditionDependencyCannotSort": "依赖关系矛盾：资源组 $ 的条件依赖 $ 对象 $，但是依赖关系整体中存在冲突，依赖链：\n$",
+    "aVeryFineKey": "此键在 2026 年愚人节当天被添加，虽然它没有什么特别的作用，但请不要随意修改或删除它，以免引起未知的错误",
 
     "error.configs.noVersionInRange": "区间内没有可用的版本",
 
