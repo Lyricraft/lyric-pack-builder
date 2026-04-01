@@ -1,0 +1,369 @@
+groups:
+
+  # ===== 模组 =====
+
+  # --- 钠生态 ---
+
+  - id: basicRendering
+    # 基础渲染优化模组
+    options:
+      - id: sodium
+        # 从 MC 版本 1.21.1 开始，钠支持了 Neoforge
+        conditions:
+          - mcVersion: "[1.21.1,)"
+        resources:
+          # 钠
+          - mods/sodium
+      - id: embeddium
+        # 在钠尚未支持 Neoforge 前，使用其非官方移植 Embeddium
+        conditions:
+          - mcVersion: "[1.20.1,1.21]"
+        resources:
+          - mods/embeddium
+
+  - id: shaders
+    # 支持光影包
+    options:
+      - id: iris
+        resources:
+          # Iris Shaders
+          - mods/iris
+
+  - id: sodiumExtra
+    # 钠·扩展
+    options:
+      - id: sodiumExtra
+        conditions:
+          - option: basicRendering.sodium
+        resources:
+          - mods/sodiumExtra
+
+  - id: sodiumUi
+    # 钠的视频界面
+    options:
+      - id: reesesSodiumOptions
+        # Reese 的钠视频界面
+        conditions:
+          - option: basicRendering.sodium
+        resources:
+          - mods/reesesSodiumOptions
+
+
+  # --- 其他渲染优化 ---
+
+  - id: immediatelyFast
+    # 优化生物、容器方块、GUI、HUD的渲染效率，提高性能
+    options:
+      - id: immediatelyFast
+        resources:
+          - mods/immediatelyFast
+
+  - id: entityCulling
+    # 实体渲染机制优化（实体剔除）：在玩家视野范围内剔除被遮挡的实体以提升性能
+    options:
+      - id: entityCulling
+        resources:
+          - mods/entityCulling
+
+  - id: moreCulling
+    # 停止渲染看不到的方块面
+    options:
+      - id: moreCulling
+        # 从 MC 版本 1.21 开始支持 Neoforge
+        conditions:
+          - mcVersion: "[1.21,)"
+        resources:
+          - mods/moreCulling
+
+  - id: asyncParticles
+    # 异步粒子
+    options:
+      - id: asyncParticles
+        # 支持区间 1.21 ~ 1.21.10，似已停更
+        conditions:
+          - mcVersion: "[1.21,1.21.10]"
+        resources:
+          - mods/asyncParticles
+
+  - id: dynamicFps
+    # 动态帧率：在后台时自动降低帧率以节省资源
+    options:
+      - id: dynamicFps
+        resources:
+          - mods/dynamicFps
+
+
+  # --- 渲染体验 ---
+
+  - id: sodiumShadowyPathBlocks
+    # 钠·土径阴影
+    options:
+      - id: sodiumShadowyPathBlocks
+        # 以钠为前置，在没有钠时舍弃
+        conditions:
+          - option: basicRendering.sodium
+        resources:
+          # 钠·土径阴影
+          - mods/sodiumShadowyPathBlocks
+
+  - id: dynamicLights
+    # 动态光源
+    options:
+      - id: lambDynamicLights
+        # 支持区间有限，其余版本暂无合适替代方案
+        conditions:
+          - mcVersion:
+            - "[1.21,1.21.1]"
+            - "[1.21.5,)"
+        resources:
+          - mods/lambDynamicLights
+
+  - id: modelGapFix
+    # 通过消除纹理缩放修复物品和方块模型中的空隙
+    options:
+      - id: modelGapFix
+        # MC 在 1.21.11 版本修复了此 Bug，以后不再需要
+        conditions:
+          - mcVersion: "[1.20.1,1.21.10]"
+        resources:
+          - mods/modelGapFix
+
+
+  # --- 性能优化 ---
+
+  - id: lithium
+    # 锂：改善游戏的红石、物理、生物AI等的逻辑，以及区块之类的机制，提高整体性能
+    options:
+      - id: lithium
+        # 从 MC 版本 1.21.1 开始支持 Neoforge
+        conditions:
+          - mcVersion: "[1.21.1,)"
+        resources:
+          - mods/lithium
+
+
+  - id: ferriteCore
+    # 铁氧体磁芯：优化游戏内存使用
+    options:
+      - id: ferriteCore
+        resources:
+          - mods/ferriteCore
+
+  - id: c2me
+    # 并发区块引擎
+    options:
+      - id: c2me
+        # 从 MC 版本 1.21.1 开始支持 Neoforge
+        conditions:
+          - mcVersion: "[1.21.1,)"
+        resources:
+          - mods/c2me
+
+  - id: krypton
+    # 氪：网络堆栈优化
+    options:
+      - id: kryptonFnp
+        # 非官方 Forge 移植，需注意要改配置
+        conditions:
+          - mcVersion:
+            - "[1.20.6,)"
+            - "1.20.1"
+        resources:
+          - mods/kryptonFnp
+      - id: kryptonFoxified
+        # 早期 Neoforge 移植，已较长时间未更新
+        conditions:
+          - mcVersion: "[1.20.2,1.20.5]"
+        resources:
+            - mods/kryptonFoxified
+
+
+  # --- 资源包扩展功能 ---
+
+  - id: connectedTextures
+    # 连接纹理（顺带发光纹理的支持）
+    options:
+      - id: neoContinuity
+        # Continuity 的 Neoforge 移植版，能不依赖信雅互联原生运行。可惜目前只支持 1.21 和 1.21.1，且其他版本暂未找到无需信雅互联且可用易用的方案。
+        conditions:
+          - mcVersion: "[1.21,1.21.1]"
+        resources:
+          - mods/neoContinuity
+
+  - id: etfAndEmf
+    # ETF 和 EMF：实体纹理特性和实体模型特性
+    options:
+      - id: etfAndEmf
+        resources:
+          # ETF
+          - mods/entityTextureFeatures
+          # EMF
+          - mods/entityModelFeatures
+
+  - id: puzzle
+    # Puzzle：提供包括但不限于自定义加载屏幕的资源包扩展功能，以及为与 Optifine 有关的模组提供统一配置
+    options:
+      - id: puzzle
+        # 从 MC 版本 1.21 开始支持 Neoforge
+        conditions:
+          - mcVersion: "[1.21,)"
+        resources:
+          - mods/puzzle
+
+
+  # --- 皮肤与披风 ---
+
+  - id: customSkinLoader
+    # 万用皮肤补丁（当然还有披风相关功能，包括但不限于显示 Optifine 披风）
+    options:
+      - id: customSkinLoader
+        resources:
+          - mods/customSkinLoader
+
+
+  # --- UI ---
+
+  - id: advancementsUi
+    # 进度 UI 优化，包括分页进度和自定义的进度图标
+    options:
+      - id: paginatedAdvancements
+        # 从 MC 版本 1.21.6 开始支持 Neoforge
+        conditions:
+          - mcVersion: "[1.21.6,)"
+        resources:
+          - mods/paginatedAdvancements
+      - id: forgedPaginatedAdvancements
+        # 非官方 Neoforge 移植
+        conditions:
+          - mcVersion: "[1.20.1,1.21.5]"
+        resources:
+          - mods/forgedPaginatedAdvancements
+
+  - id: mountHud
+    # 骑乘 HUD 优化
+    options:
+      - id: leaveMyBarsAlone
+        # 改进的骑乘 HUD
+        conditions:
+          - mcVersion:
+            - "[1.21.1,)"
+            - "1.20.4"
+            - "1.20.1"
+        resources:
+          - mods/leaveMyBarsAlone
+
+
+  # --- 实用功能 ---
+
+  - id: borderlessFullscreen
+    # 无边框全屏
+    options:
+      - id: cubesWithoutBorders
+        # 从 MC 版本 1.20.5 开始支持 Neoforge。注意使用时要更改配置，以及包含本地化资源包。
+        conditions:
+          - mcVersion: "[1.20.5,)"
+        resources:
+          - mods/cubesWithoutBorders
+      - id: concentration
+        # 专注。在 Cubes Without Borders 尚未支持 Neoforge 前用以替代，但在此区间内也只支持 1.20.1.
+        conditions:
+          - mcVersion: "1.20.1"
+          - packFormat: "modrinth"
+        resources:
+          - mods/concentration
+
+  - id: oneKeyZoom
+    # 一键缩放
+    options:
+      - id: okZoomer
+        # 从 MC 版本 1.21 开始支持 Neoforge。
+        conditions:
+          - mcVersion: "[1.21,)"
+        resources:
+          - mods/okZoomer
+      - id: vanillaZoom
+        # 原版缩放：按键自动在副手使用望远镜。在 OK Zoomer 尚未支持 Neoforge 前的替代方案。注意更改热键。
+        conditions:
+          - mcVersion: "[1.20.1,1.21)"
+        resources:
+          - mods/vanillaZoom
+
+  - id: noChatReports
+    # 禁用聊天举报
+    options:
+      - id: noChatReports
+        resources:
+          - mods/noChatReports
+
+
+  # --- 前置 ---
+
+  - id: clothConfigApi
+    options:
+      - id: clothConfigApi
+        conditions:
+          - resource:
+            - mods/moreCulling
+            - mods/forgedPaginatedAdvancements
+        resources:
+          - mods/clothConfigApi
+
+  - id: midnightLib
+    options:
+      - id: midnightLib
+        conditions:
+          - resource:
+            - mods/puzzle
+        resources:
+          - mods/midnightLib
+
+  - id: puzzlesLib
+    options:
+      - id: puzzlesLib
+        conditions:
+          - resource:
+            - mods/leaveMyBarsAlone
+        resources:
+          - mods/puzzlesLib
+
+
+  # ====== 资源包 ======
+
+  - id: betterGrass
+    # 更好的草地：使草方块和草地路径方块的侧面和底部也显示草纹理
+    options:
+      - id: fastBetterGrass
+        resources:
+          - resourcepacks/fastBetterGrass
+
+  - id: sodiumTranslations
+    # 钠的本地化资源包
+    options:
+      - id: translationsForSodium
+        conditions:
+          - option: basicRendering.sodium
+        resources:
+          - resourcepacks/translationsForSodium
+
+
+  # ====== 自制资源包 ======
+
+  - id: modpackHelper
+    options:
+      - id: neofoundationHelper
+        resources:
+          - packs/neofoundationHelper
+
+  - id: cwbTranslations
+    # Cubes Without Borders 的本地化资源包
+    options:
+      - id: translationsForCwb
+        conditions:
+          - option: borderlessFullscreen.cubesWithoutBorders
+        resources:
+          - packs/translationsForCwb
+
+folders:
+  - id: resourcepacks
+    # 资源包文件夹
+    paths: "resourcepacks"

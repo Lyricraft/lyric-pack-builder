@@ -12,6 +12,15 @@ export function extendConditionMap() {
     return new Map(conditionMap);
 }
 
+/*
+    mcVersion: Version
+ */
+export function conditionContext(mcVersion, modLoader, packFormat, groups = [], options = [], resources = []) {
+    return {
+        mcVersion, modLoader, packFormat, groups, options, resources
+    }
+}
+
 export class Condition {
     constructor(type, obj) {
         this.type = type;
@@ -39,7 +48,7 @@ export class Condition {
         if (used) {
             return used;
         }
-        throw new ConfigError(t('error.configs.invalidConditionType', obj), "condition");
+        throw new ConfigError(t('error.configs.invalidConditionType', JSON.stringify(obj)), "condition");
     }
 
     static fromArray(array) {
@@ -168,6 +177,9 @@ class McVersionCondition extends Condition {
     }
 
     test(context, tracker = null) {
+        if (!context.mcVersion) {
+            return false;
+        }
         if (tracker && !tracker.mcVersion) {
             tracker.mcVersion = context.mcVersion.toString();
         }
@@ -193,6 +205,9 @@ class ModLoaderCondition extends Condition {
     }
 
     test(context, tracker = null) {
+        if (!context.modLoader) {
+            return false;
+        }
        if (tracker && !tracker.modLoader) {
            tracker.modLoader = context.modLoader;
        }
@@ -215,6 +230,9 @@ class PackFormatCondition extends Condition {
     }
 
     test(context, tracker = null) {
+        if (!context.packFormat) {
+            return false;
+        }
         if (tracker && !tracker.packFormat) {
             tracker.packFormat = context.packFormat;
         }

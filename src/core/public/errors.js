@@ -20,3 +20,12 @@ export class ArgsError extends TypedError {
         super(ArgsError.TYPE, message);
     }
 }
+
+export class FileSystemError extends TypedError {
+    static TYPE = 'fileSystem';
+
+    constructor(message, path) {
+        super(FileSystemError.TYPE, message);
+        this.path = path;
+    }
+}

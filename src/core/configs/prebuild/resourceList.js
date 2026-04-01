@@ -8,8 +8,9 @@ import {
 import {deepClone, isPlainObject, StringType, stringUsable} from "../../public/type.js";
 import {t} from "../../i18n/translate.js";
 import {getRandomIntId} from "../../public/calculate.js";
-import {checkConfigArray, checkConfigField, checkConfigInnerParse, checkConfigStringChars} from "../checker.js";
+import {checkConfigArray, checkConfigField, checkConfigStringChars} from "../checker.js";
 import {Condition} from "../objects/conditions.js";
+import {parseInnerObj} from "../parser.js";
 
 export class ResourceLike {
     constructor(id, type) {
@@ -74,24 +75,22 @@ export class InlineResource extends ResourceLike {
     }
 }
 
-ResourceLike.fromField = async function(field, resourceDirPath) {
+ResourceLike.fromField = function(field) {
     let resourceLike;
     if (stringUsable(field)) {
         resourceLike = new ResourceReference(field);
     } else if (isPlainObject(field)) {
         let id;
         if (stringUsable(field.id)) {
-            checkConfigStringChars(field.id, 'Option', 'resources[*].id', StringType.FILE_NAME);
+            checkConfigStringChars(field.id, 'Option', 'resources[id=?].id', StringType.FILE_NAME);
             id = `inline:${field.id}`;
         } else {
             id = `inline:resource_${getRandomIntId()}`;
         }
         resourceLike = new InlineResource(id, field);
     } else {
-        throw new ConfigFieldTypeError('Option', 'resources[*]', 'string(ResourceConfigPath) / object(InlineResourceObj)', field);
+        throw new ConfigFieldTypeError('Option', 'resources[id=?]', 'string(ResourceConfigPath) / object(InlineResourceObj)', field);
     }
-
-    await resourceLike.check(resourceDirPath);
 
     return resourceLike;
 }
@@ -111,15 +110,17 @@ export class ResourceOption {
             id = `option_${getRandomIntId()}`;
         }
 
-        let condition = checkConfigInnerParse(obj.conditions, 'Option', 'conditions',
+        let condition = parseInnerObj(obj.conditions, 'Option', 'conditions',
             (array) => Condition.fromArray(array), true);
         if (!condition) {
             condition = Condition.always();
         }
 
-        const resources = checkConfigInnerParse(obj.resources, 'Option', 'resources',
-            (field) => ResourceLike.fromField(field));
-        checkConfigArray(resources, 'Option', 'resources', 'object(ResourceLike)');
+        checkConfigArray(obj.resources, 'Option', 'resources', 'string(ResourceConfigPath) / object(InlineResourceObj) []'); // 不为空、不可选
+        const resources = [];
+        for (const resourceObj of obj.resources) {
+            resources.push(parseInnerObj(resourceObj, 'Option', 'resources', (field) => ResourceLike.fromField(field)));
+        }
 
         return new ResourceOption(id, condition, resources);
     }
@@ -149,7 +150,7 @@ export class ResourceGroup {
 
             const option = deepClone(obj);
             option.id = optionId;
-            options.set(optionId, checkConfigInnerParse(option, 'Group', 'options[*]',
+            options.set(optionId, parseInnerObj(option, 'Group', `options[id=${optionId}]`,
                 (optionObj) => ResourceOption.fromObj(optionObj)));
         } else {
             if (obj.id) {
@@ -163,11 +164,11 @@ export class ResourceGroup {
         if (options.size === 0) {
             checkConfigArray(obj.options, 'Group', 'options', 'object(ResourceOption)'); // 检查保证不为空
             for (const optionObj of obj.options) {
-                const option = checkConfigInnerParse(optionObj, 'Group', 'options[*]',
+                const option = parseInnerObj(optionObj, 'Group', `options[id=${optionObj?.id??'?'}]`,
                     (optionObj) => ResourceOption.fromObj(optionObj));
                 // 防止重复 id
                 if (options.has(option.id)) {
-                    throw new ConfigError(t('error.configs.duplicateId', 'Option', option.id), 'options[*]')
+                    throw new ConfigError(t('error.configs.duplicateId', 'Option', option.id), `options[id=${option.id}]`);
                 }
                 options.set(option.id, option);
             }
@@ -175,7 +176,7 @@ export class ResourceGroup {
 
         let required = checkConfigField(obj.required, 'Option', 'required', 'bool', (bool) => typeof bool === 'boolean', true, false);
 
-        return new ResourceOption(id, options, required);
+        return new ResourceGroup(id, options, required);
     }
 }
 
@@ -198,7 +199,11 @@ class OptionPath{
 
 export class ResourceList {
     constructor(groups) {
-        this.groups = groups;
+        this.groups = groups; // Map<string, Group>
+    }
+
+    groupArray() {
+        return this.groups.values();
     }
 
     static fromArray(array) {
@@ -210,14 +215,14 @@ export class ResourceList {
         const unsortedGroupMap = new Map();
         for (const groupObj of array) {
             // 必须是对象
-            checkConfigField(groupObj, 'ResourceList', 'groups[*]', 'object(Group)',
+            checkConfigField(groupObj, 'ResourceList', 'groups[id=?]', 'object(Group)',
                 (arg) => isPlainObject(arg));
             // 解析并检查
-            const group = checkConfigInnerParse(groupObj, 'ResourceList', 'groups[*]',
+            const group = parseInnerObj(groupObj, 'ResourceList', `groups[id=${groupObj?.id??'?'}]`,
                 (arg) => ResourceGroup.fromObj(arg));
             // 防止重复 id
             if (unsortedGroupMap.has(group.id)) {
-                throw new ConfigError(t('error.configs.duplicateId', 'Group', group.id), 'groups[*]')
+                throw new ConfigError(t('error.configs.duplicateId', 'Group', group.id), `groups[id=${group.id}]`)
             }
             // 存入映射表
             unsortedGroupMap.set(group.id, group);

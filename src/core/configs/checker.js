@@ -1,10 +1,4 @@
-import {
-    ConfigEmptyArrayError,
-    ConfigFieldError,
-    ConfigFieldInnerError,
-    ConfigFieldMissingError,
-    ConfigFieldTypeError
-} from "./errors.js";
+import {ConfigEmptyArrayError, ConfigFieldError, ConfigFieldMissingError, ConfigFieldTypeError} from "./errors.js";
 import {checkEnum, StringType, stringUsable} from "../public/type.js";
 
 export function checkConfigArray(array, parent, field, type, checkFunc = null, allowEmpty = false, optional = false) {
@@ -65,20 +59,3 @@ export function checkConfigStringChars(str, parent, field, stringType, optional 
     return str;
 }
 
-export function checkConfigInnerParse(obj, parent, field, parseFunc, optional = false) {
-    if (optional && !obj) {
-        return null;
-    }
-    if (!obj) {
-        throw new ConfigFieldMissingError(parent, field);
-    }
-
-    let result;
-    try {
-        result = parseFunc(obj);
-    } catch (e) {
-        throw new ConfigFieldInnerError(parent, field, e);
-    }
-
-    return result;
-}

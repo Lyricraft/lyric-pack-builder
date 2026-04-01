@@ -129,11 +129,11 @@ export class VersionRange {
         }
     }
 
-    #constructAVersion(str, fullRange = str){
+    static #constructAVersion(str, fullRange = str){
         try {
             return Version.fromString(str);
         } catch (e) {
-            throw new Error(t('error.versionRangeType.invalidRangeStringMsg", fullRange, e.message'));
+            throw new Error(t('error.versionRangeType.invalidRangeStringMsg', fullRange, e.message));
         }
     }
 

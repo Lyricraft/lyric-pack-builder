@@ -18,7 +18,7 @@ export function stringUsable(str, type = StringType.STRING) {
         return !/[\\/:<>|"?*]|\/\//.test(str);
     }
     if (type === StringType.FILE_PATH) {
-        return !/[\/\\:*?"<>|]|[\/\\]$/.test(str);
+        return !/[\\:*?"<>|]|[\/\\]$/.test(str);
     }
 
     return false;
