@@ -189,11 +189,10 @@ class OptionPath{
         return`${this.groupId}.${this.optionId}`;
     }
 
-    fromString(str){
+    static fromString(str){
         // 从条件对象来，不做值校验了
-        const segments = str.split(',');
-        this.groupId = segments[0];
-        this.optionId = segments[1];
+        const segments = str.split('.');
+        return new OptionPath(segments[0], segments[1]);
     }
 }
 
@@ -208,7 +207,7 @@ export class ResourceList {
         checkConfigArray(array, 'ResourceList', 'groups', 'object(Group)');
 
         // 先把所有 groups 解析了
-        const unsortedGroupsMap = new Map();
+        const unsortedGroupMap = new Map();
         for (const groupObj of array) {
             // 必须是对象
             checkConfigField(groupObj, 'ResourceList', 'groups[*]', 'object(Group)',
@@ -216,39 +215,52 @@ export class ResourceList {
             // 解析并检查
             const group = checkConfigInnerParse(groupObj, 'ResourceList', 'groups[*]',
                 (arg) => ResourceGroup.fromObj(arg));
+            // 防止重复 id
+            if (unsortedGroupMap.has(group.id)) {
+                throw new ConfigError(t('error.configs.duplicateId', 'Group', group.id), 'groups[*]')
+            }
             // 存入映射表
-            unsortedGroupsMap.set(group.id, group);
+            unsortedGroupMap.set(group.id, group);
         }
 
         // 将使用到的 ResourceLike 的 id 提取出来
-        const resourceLikesMap = new Map(); // resourceId -> groupId[]
-        for (const groupId of unsortedGroupsMap.keys()) {
-            const group = unsortedGroupsMap[groupId];
+        const resourceLikeMap = new Map(); // resourceId -> groupId[]
+        for (const groupId of unsortedGroupMap.keys()) {
+            const group = unsortedGroupMap.get(groupId);
             for (const option of group.options.values()) { // group.options 是 Map
-                for (const resourceLike of option.resources) { // option.resouces 是 Array
-                    if (!resourceLikesMap.has(resourceLike.id)) {
+                for (const resourceLike of option.resources) { // option.resources 是 Array
+                    if (!resourceLikeMap.has(resourceLike.id)) {
                         // 没有就创建个成员
-                        resourceLikesMap.set(resourceLike.id, [groupId]);
+                        resourceLikeMap.set(resourceLike.id, [groupId]);
                     } else {
                         // 有了就压进去
-                        resourceLikesMap.get(resourceLike.id).push(groupId);
+                        resourceLikeMap.get(resourceLike.id).push(groupId);
                     }
                 }
             }
         }
 
         // 按照条件依赖关系给排序
-        const groupsArray = []; // 实际上是倒序
-        while (resourceLikesMap.size > 0) {
-            const key = unsortedGroupsMap.keys().next().value; // 拿到第一个键
-            moveGroupToSortingList(key, 0, groupsArray, unsortedGroupsMap, resourceLikesMap, []); // 加到第一个
+        const groupArray = []; // 实际上是倒序
+        while (unsortedGroupMap.size > 0) {
+            const key = unsortedGroupMap.keys().next().value; // 拿到第一个键
+            moveGroupToSortingList(key, 0, groupArray, unsortedGroupMap, resourceLikeMap, []); // 加到第一个（物理）
         }
 
+        // 倒序放入新 Map
+        const groupMap = new Map();
+        for (let i = groupArray.length - 1; i >= 0; i--) {
+            groupMap.set(groupArray[i].id, groupArray[i]);
+        }
 
+        // 大功告成
+        return new ResourceList(groupMap);
     }
 }
 
-function moveGroupToSortingList(key, index, groupArray, unsortedGroupMap, resourceLikesMap, chain) {
+function moveGroupToSortingList(key, index, groupArray, unsortedGroupMap, resourceLikeMap, chain) {
+    // chain 中所有成员均为 group id
+
     // 先移动到指定位置
     const group = unsortedGroupMap.get(key);
     groupArray.splice(index, 0, group);
@@ -260,30 +272,111 @@ function moveGroupToSortingList(key, index, groupArray, unsortedGroupMap, resour
         option.condition.test({}, tracker);
     }
 
-    // 判断自指
-    // 组自指
-    if (tracker.dependency.group && tracker.dependency.group.includes(group.id)) {
-        throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Group', group.id), `groups[${group.id}].options[*].conditions`);
+    // 判断自指、不存在，以及放入依赖
+    // 组
+    if (tracker.dependency.group) {
+        for (const groupDependencyId of tracker.dependency.group) {
+            // 检查是否自指
+            if (groupDependencyId === group.id) {
+                throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Group', groupDependencyId), `groups[${group.id}].options[*].conditions`);
+            }
+            // 检查是否循环依赖
+            if (chain.includes(groupDependencyId)) {
+                throw new ConfigError(t('error.configs.conditionCircularDependency', group.id, chain), `groups[${group.id}].options[*].conditions`);
+            }
+            // 检查是否已依赖
+            const dependencyIndex = groupArray.findIndex(item => item.id === groupDependencyId);
+            if (dependencyIndex > -1) {
+                // 找到，判断其位置
+                if (dependencyIndex > index) {
+                    // 正常已依赖，可以处理下一个
+                } else {
+                    // 一般情况不会到此分支，除非我的逻辑中存在漏洞。
+                    // 为避免出乎意料的问题，保险起见，抛出错误。
+                    throw new ConfigError(t('error.configs.conditionDependencyCannotSort', group.id, 'Group', groupDependencyId, chain));
+                }
+            } else {
+                // 检查是否存在
+                if (unsortedGroupMap.has(groupDependencyId)) {
+                    // 存在，递归调用依赖
+                    moveGroupToSortingList(groupDependencyId, index + 1, groupArray, unsortedGroupMap, resourceLikeMap, [...chain, group.id]);
+                } else {
+                    // 不存在，抛出错误
+                    throw new ConfigError(t('error.configs.conditionDependencyNotFound', group.id, 'Group', groupDependencyId), `groups[${group.id}].options[*].conditions`);
+                }
+            }
+        }
     }
-    // 选项自指
+    // 选项
     if (tracker.dependency.option) {
-        for (const option of group.options.values()) {
-            if (tracker.dependency.option.includes(`${group.id}.${option.id}`)) {
-                throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Option', option.id), `groups[${group.id}].options[*].conditions`);
+        for (const optionDependencyId of tracker.dependency.option) {
+            // 解析 option ID
+            const optionDependencyPath = OptionPath.fromString(optionDependencyId);
+            // 检查是否自指
+            if (optionDependencyPath.groupId === group.id) {
+                throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Option', optionDependencyId), `groups[${group.id}].options[*].conditions`);
+            }
+            // 检查是否循环依赖
+            if (chain.includes(optionDependencyPath.groupId)) {
+                throw new ConfigError(t('error.configs.conditionCircularDependency', group.id, chain), `groups[${group.id}].options[*].conditions`);
+            }
+            // 检查 group 是否已依赖
+            const dependencyIndex = groupArray.findIndex(item => item.id === optionDependencyPath.groupId);
+            if (dependencyIndex > -1) {
+                // 找到，判断其位置
+                if (dependencyIndex > index) {
+                    // 检查 option 是否存在
+                    if (!groupArray[dependencyIndex].options.has(optionDependencyPath.optionId)) { // 注意 options 是 Map
+                        // 不存在，抛出错误
+                        throw new ConfigError(t('error.configs.conditionDependencyNotFound', group.id, 'Option', optionDependencyId), `groups[${group.id}].options[*].conditions`);
+                    }
+                    // 正常已依赖，可以处理下一个
+                } else {
+                    // 一般情况不会到此分支，除非我的逻辑中存在漏洞。
+                    // 为避免出乎意料的问题，保险起见，抛出错误。
+                    throw new ConfigError(t('error.configs.conditionDependencyCannotSort', group.id, 'Option', optionDependencyId, chain));
+                }
+            } else {
+                // 检查 group 和 option 是否都存在
+                if (unsortedGroupMap.has(optionDependencyPath.groupId) && unsortedGroupMap.get(optionDependencyPath.groupId).options.has(optionDependencyPath.optionId)) {
+                    // 存在，递归调用依赖
+                    moveGroupToSortingList(optionDependencyPath.groupId, index + 1, groupArray, unsortedGroupMap, resourceLikeMap, [...chain, group.id]);
+                } else {
+                    // 不存在，抛出错误
+                    throw new ConfigError(t('error.configs.conditionDependencyNotFound', group.id, 'Option', optionDependencyId), `groups[${group.id}].options[*].conditions`);
+                }
             }
         }
     }
-    // 资源自指
+    // 资源
     if (tracker.dependency.resource) {
-        for (const resource of tracker.dependency.resource) {
-            if (resourceLikesMap.get(resource) && resourceLikesMap.get(resource).includes(group.id)) {
-                throw new ConfigError(t('error.configs.conditionSelfDependency', group.id, 'Resource', resource), `groups[${group.id}].options[*].conditions`);
+        for (const resourceDependencyId of tracker.dependency.resource) {
+            // 检查是否存在
+            if (!resourceLikeMap.has(resourceDependencyId)) {
+                throw new ConfigError(t('error.configs.conditionDependencyNotFound', group.id, 'Resource', resourceDependencyId), `groups[${group.id}].options[*].conditions`);
+            }
+            // 遍历每一个 group
+            for (const groupDependencyId of resourceLikeMap.get(resourceDependencyId)) {
+                // 检查是否循环依赖
+                if (chain.includes(groupDependencyId)) {
+                    throw new ConfigError(t('error.configs.conditionCircularDependency', group.id, chain), `groups[${group.id}].options[*].conditions`);
+                }
+                // 检查是否已依赖
+                const dependencyIndex = groupArray.findIndex(item => item.id === groupDependencyId);
+                if (dependencyIndex > -1) {
+                    // 找到，判断其位置
+                    if (dependencyIndex > index) {
+                        // 正常已依赖，可以处理下一个
+                    } else {
+                        // 一般情况不会到此分支，除非我的逻辑中存在漏洞。
+                        // 为避免出乎意料的问题，保险起见，抛出错误。
+                        throw new ConfigError(t('error.configs.conditionDependencyCannotSort', group.id, 'Group', groupDependencyId, chain));
+                    }
+                } else {
+                    // 递归调用依赖
+                    moveGroupToSortingList(groupDependencyId, index + 1, groupArray, unsortedGroupMap, resourceLikeMap, [...chain, group.id]);
+                }
             }
         }
     }
-
-    // 查看依赖是否存在
-
-    // 对依赖排序来说，看来我想的还不够，有逻辑漏洞，今天肯定完成不了了，我还得想更好的方法。
-
 }
