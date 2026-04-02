@@ -137,11 +137,15 @@ export class ResourceGroup {
         let options = new Map();
         let id;
 
-        if (Object.hasOwn(obj, 'option')) {
-            let id, optionId;
-            if (obj.option) {
+        // 简写形式：直接填 resources，不填 groups
+        if (Object.hasOwn(obj, 'resources')) {
+            if (Object.hasOwn(obj, 'groups')) {
+                throw new ConfigError(t('error.configs.varietyDefine', 'Group', 'resources', 'groups'), `resources[id=${obj.id??'?'}]`);
+            }
+            let optionId;
+            if (obj.id) {
                 id = optionId
-                    = checkConfigStringChars(obj.option, 'Group', 'option', StringType.FILE_NAME);
+                    = checkConfigStringChars(obj.id, 'Group', 'option', StringType.FILE_NAME);
             } else {
                 const randomId = getRandomIntId();
                 id = `group_${randomId}`

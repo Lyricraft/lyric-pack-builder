@@ -44,6 +44,7 @@
     "error.configs.fieldMsg": "$ 的项 $ 配置有误：\n$",
     "error.configs.illegalCharacters": "$ 的项 $ 包含非法字符：$",
     "error.configs.duplicateId": "用作 $ 的 id $ 已经被使用了，不能重复使用",
+    "error.configs.varietyDefine": "$ 已经定义了 $，不能再定义 $",
 
     "error.configs.conditionNotAnObject": "单个条件必须是一个对象，但提供了：$",
     "error.configs.invalidConditionType": "无法识别的条件类型：$",
