@@ -29,23 +29,16 @@ export function parseInnerObj(obj, parent, field, parseFunc, optional = false) {
 }
 
 export async function parseFileYaml(filePath, options = 'utf-8') {
-    if (path.extname(filePath) === '.yaml' || path.extname(filePath) === '.yml') {
-        if (await regularFileExists(filePath)) {
-            return await parseFileYamlByPath(filePath, options);
-        } else {
-            throw new ConfigFileMissingError(filePath);
-        }
-    } else {
-        const ymlPath = path.resolve(`${filePath}.yml`);
-        if (await regularFileExists(ymlPath)) {
-            return await parseFileYamlByPath(ymlPath, options);
-        }
-        const yamlPath = path.resolve(`${filePath}.yaml`);
-        if (await regularFileExists(yamlPath)) {
-            return await parseFileYamlByPath(yamlPath, options);
-        }
-        throw new ConfigFileMissingError(filePath);
+    filePath = filePath.replace(/\.(yml|yaml)$/, '');
+    const ymlPath = path.join(`${filePath}.yml`);
+    if (await regularFileExists(ymlPath)) {
+        return await parseFileYamlByPath(ymlPath, options);
     }
+    const yamlPath = path.join(`${filePath}.yaml`);
+    if (await regularFileExists(yamlPath)) {
+        return await parseFileYamlByPath(yamlPath, options);
+    }
+    throw new ConfigFileMissingError(filePath);
 }
 
 async function parseFileYamlByPath(filePath, options = 'utf-8') {
