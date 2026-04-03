@@ -74,6 +74,10 @@ export function checkEnum(enumObj, value) {
     return false;
 }
 
+export function isNullOrUndefined(obj) {
+    return obj === null || obj === undefined;
+}
+
 /*
     标准化对象，主要用于对对象取哈希前的预处理。输入任意可转化为 JSON 的类型，输出 JSON 字符串
 

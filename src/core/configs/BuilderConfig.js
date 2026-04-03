@@ -1,4 +1,4 @@
-import {checkConfigStringType} from "./checker.js";
+import {checkConfigInt, checkConfigStringType, optionalConfigField} from "./checker.js";
 import {StringType} from "../public/type.js";
 
 export class BuilderConfig {
@@ -10,5 +10,11 @@ export class BuilderConfig {
 
     static fromObj(obj) {
         const config = {};
+        config.modrinthRequestInterval
+            = checkConfigInt(obj.modrinthRequestInterval, 'builder.yml', 'modrinthRequestInterval',
+            1000, 0, 60*1000);
+        config.curseforgeRequestInterval
+            = checkConfigInt(obj.curseforgeRequestInterval, 'builder.yml', 'curseforgeRequestInterval',
+            1000, 0, 60*1000);
     }
 }

@@ -43,6 +43,7 @@
     "error.configs.emptyArray": "$ 的数组 $ 不能为空",
     "error.configs.fieldMsg": "$ 的项 $ 配置有误：\n$",
     "error.configs.illegalCharacters": "$ 的项 $ 包含非法字符：$",
+    "error.configs.outOfRange": "$ 的项 $ 值应该在范围 $ 内，但提供了 $",
     "error.configs.duplicateId": "用作 $ 的 id $ 已经被使用了，不能重复使用",
     "error.configs.varietyDefine": "$ 已经定义了 $，不能再定义 $",
 

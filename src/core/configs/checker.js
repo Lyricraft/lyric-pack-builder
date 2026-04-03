@@ -1,5 +1,6 @@
 import {ConfigEmptyArrayError, ConfigFieldError, ConfigFieldMissingError, ConfigFieldTypeError} from "./errors.js";
-import {checkEnum, StringType, stringUsable} from "../public/type.js";
+import {checkEnum, isNullOrUndefined, StringType, stringUsable} from "../public/type.js";
+import {t} from "../i18n/translate.js";
 
 export function checkConfigArray(array, parent, field, type, checkFunc = null, allowEmpty = false, optional = false) {
     if (optional && !array) {
@@ -59,3 +60,15 @@ export function checkConfigStringChars(str, parent, field, stringType, optional 
     return str;
 }
 
+export function checkConfigInt(num, parent, field, defaultValue = undefined, min = null, max = null) {
+    if (defaultValue && isNullOrUndefined(num)) {
+        return null;
+    }
+    if (!Number.isInteger(num)) {
+        throw new ConfigFieldTypeError(parent, field, 'int', num);
+    }
+    if ((!isNullOrUndefined(min) && num < min) || (!isNullOrUndefined(max) && num > max)) {
+        throw new ConfigFieldError(parent, field, t('error.configs.outOfRange', parent, field,
+            `${isNullOrUndefined(min) ? '(' : `[${min}`},${isNullOrUndefined(max) ? ')' : `${max}}`}`));
+    }
+}
