@@ -333,3 +333,4 @@ class ResourceCondition extends ReferenceCondition {
     }
 }
 conditionMap.set('resource', ResourceCondition);
+

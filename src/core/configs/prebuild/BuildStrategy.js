@@ -18,11 +18,11 @@ export class BuildStrategy {
     static fromObj(obj) {
         const options = {};
 
-        checkConfigEnum(obj.dependencies, 'Strategy', 'dependencies', 'DependencyStrategy', DependencyStrategy)
-        options.dependencies = obj.dependencies;
+        options.dependencies =
+            checkConfigEnum(obj.dependencies, 'Strategy', 'dependencies', 'DependencyStrategy', DependencyStrategy)
 
-        checkConfigEnum(obj.autoVersionChoice, 'Strategy', 'autoVersionChoice', 'AutoVersionChoice', AutoVersionChoice, true);
-        options.autoVersionChoice = obj.autoVersionChoice??DEFAULT_AUTO_VERSION_CHOICE;
+        options.autoVersionChoice =
+            checkConfigEnum(obj.autoVersionChoice, 'Strategy', 'autoVersionChoice', 'AutoVersionChoice', AutoVersionChoice, DEFAULT_AUTO_VERSION_CHOICE);
 
         return new BuildStrategy(options);
     }

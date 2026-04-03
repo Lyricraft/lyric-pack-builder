@@ -116,7 +116,7 @@ export class ResourceOption {
             condition = Condition.always();
         }
 
-        checkConfigArray(obj.resources, 'Option', 'resources', 'string(ResourceConfigPath) / object(InlineResourceObj) []'); // 不为空、不可选
+        checkConfigArray(obj.resources, 'Option', 'resources', undefined, 'string(ResourceConfigPath) / object(InlineResourceObj) []', null, false); // 不为空、不可选
         const resources = [];
         for (const resourceObj of obj.resources) {
             resources.push(parseInnerObj(resourceObj, 'Option', 'resources', (field) => ResourceLike.fromField(field)));
@@ -166,7 +166,7 @@ export class ResourceGroup {
 
         // 如果不等于零，说明是简写的，已经处理好 option 了，这里直接跳过。
         if (options.size === 0) {
-            checkConfigArray(obj.options, 'Group', 'options', 'object(ResourceOption)'); // 检查保证不为空
+            checkConfigArray(obj.options, 'Group', 'options', undefined, 'object(ResourceOption)', null, false); // 检查保证不为空
             for (const optionObj of obj.options) {
                 const option = parseInnerObj(optionObj, 'Group', `options[id=${optionObj?.id??'?'}]`,
                     (optionObj) => ResourceOption.fromObj(optionObj));
@@ -178,7 +178,7 @@ export class ResourceGroup {
             }
         }
 
-        let required = checkConfigField(obj.required, 'Option', 'required', 'bool', (bool) => typeof bool === 'boolean', true, false);
+        let required = checkConfigField(obj.required, 'Option', 'required', 'bool', (bool) => typeof bool === 'boolean', true);
 
         return new ResourceGroup(id, options, required);
     }
@@ -213,7 +213,7 @@ export class ResourceList {
     static fromArray(array) {
 
         // array 必须是非空数组
-        checkConfigArray(array, 'ResourceList', 'groups', 'object(Group)');
+        checkConfigArray(array, 'ResourceList', 'groups', undefined, 'object(Group)', null, false);
 
         // 先把所有 groups 解析了
         const unsortedGroupMap = new Map();

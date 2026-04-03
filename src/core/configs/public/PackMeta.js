@@ -12,7 +12,7 @@ export class PackMeta {
     }
 
     static fromObj(obj) {
-        checkConfigStringType(obj.id, 'Meta', 'id', 'FileName', StringType.FILE_NAME);
+        checkConfigStringType(obj.id, 'Meta', 'id', undefined, 'FileName', StringType.FILE_NAME);
 
         checkConfigStringType(obj.name, 'Meta', 'name');
 
@@ -20,14 +20,11 @@ export class PackMeta {
 
         const extra = {};
 
-        checkConfigEnum(obj.versionStage, 'Meta', 'versionStage', 'VersionStage', VersionStage, true);
-        extra.versionStage = obj.versionStage;
+        extra.versionStage = checkConfigEnum(obj.versionStage, 'Meta', 'versionStage', 'VersionStage', VersionStage);
 
-        checkConfigStringType(obj.author, 'Meta', 'author', "", StringType.STRING, true);
-        extra.author = obj.author;
+        extra.author = checkConfigStringType(obj.author, 'Meta', 'author', undefined, "", StringType.STRING);
 
-        checkConfigStringType(obj.description, 'Meta', 'description', "", StringType.STRING, true);
-        extra.description = obj.description;
+        extra.description = checkConfigStringType(obj.description, 'Meta', 'description', undefined, "", StringType.STRING);
 
         return new PackMeta(obj.id, obj.name, obj.version, extra);
     }

@@ -2,9 +2,13 @@ import {ConfigEmptyArrayError, ConfigFieldError, ConfigFieldMissingError, Config
 import {checkEnum, isNullOrUndefined, StringType, stringUsable} from "../public/type.js";
 import {t} from "../i18n/translate.js";
 
-export function checkConfigArray(array, parent, field, type, checkFunc = null, allowEmpty = false, optional = false) {
-    if (optional && !array) {
-        return null;
+/*
+    注意：在必选（即默认值不可用）时，请在 defaultValue 参数使用 undefined 而非 null。null 表示默认值为 null！
+ */
+export function checkConfigArray(array, parent, field, defaultValue = undefined,
+                                 type = "", checkFunc = null, allowEmpty = false) {
+    if (defaultValue !== undefined && isNullOrUndefined(array)) {
+        return defaultValue;
     }
     if (!array) {
         throw new ConfigFieldMissingError(parent, field);
@@ -25,8 +29,9 @@ export function checkConfigArray(array, parent, field, type, checkFunc = null, a
     return array;
 }
 
-export function checkConfigField(obj, parent, field, type, checkFunc, optional = false, defaultValue = null) {
-    if (optional && !obj) {
+export function checkConfigField(obj, parent, field, type, checkFunc,
+                                 defaultValue = undefined) {
+    if (defaultValue !== undefined && isNullOrUndefined(obj)) {
         return defaultValue;
     }
     if (!obj) {
@@ -38,18 +43,20 @@ export function checkConfigField(obj, parent, field, type, checkFunc, optional =
     return obj;
 }
 
-export function checkConfigEnum(str, parent, field, type, enumType, optional = false) {
-    return checkConfigField(str, parent, field, `string(${type})`, (obj) => checkEnum(enumType, obj), optional);
+export function checkConfigEnum(str, parent, field, type, enumType,
+                                defaultValue = undefined) {
+    return checkConfigField(str, parent, field, `string(${type})`, (obj) => checkEnum(enumType, obj), defaultValue);
 }
 
-export function checkConfigStringType(str, parent, field, type = "", stringType = StringType.STRING, optional = false) {
+export function checkConfigStringType(str, parent, field, defaultValue = undefined,
+                                      type = "", stringType = StringType.STRING) {
     return checkConfigField(str, parent, field, `string${stringUsable(type) ? `(${type})` : ""}`,
-        (obj) => stringUsable(obj, stringType), optional);
+        (obj) => stringUsable(obj, stringType), defaultValue);
 }
 
-export function checkConfigStringChars(str, parent, field, stringType, optional = false) {
-    if (optional && !str) {
-        return null;
+export function checkConfigStringChars(str, parent, field, stringType, defaultValue = undefined) {
+    if (defaultValue !== undefined && isNullOrUndefined(str)) {
+        return defaultValue;
     }
     if (!str) {
         throw new ConfigFieldMissingError(parent, field);
@@ -61,8 +68,8 @@ export function checkConfigStringChars(str, parent, field, stringType, optional 
 }
 
 export function checkConfigInt(num, parent, field, defaultValue = undefined, min = null, max = null) {
-    if (defaultValue && isNullOrUndefined(num)) {
-        return null;
+    if (defaultValue !== undefined && isNullOrUndefined(num)) {
+        return defaultValue;
     }
     if (!Number.isInteger(num)) {
         throw new ConfigFieldTypeError(parent, field, 'int', num);
@@ -71,4 +78,5 @@ export function checkConfigInt(num, parent, field, defaultValue = undefined, min
         throw new ConfigFieldError(parent, field, t('error.configs.outOfRange', parent, field,
             `${isNullOrUndefined(min) ? '(' : `[${min}`},${isNullOrUndefined(max) ? ')' : `${max}}`}`));
     }
+    return num;
 }

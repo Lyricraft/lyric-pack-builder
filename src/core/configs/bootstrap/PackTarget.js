@@ -35,12 +35,12 @@ export class PackTarget {
         }
 
         // 加载器
-        checkConfigArray(obj.loaders, 'Target', 'loaders', 'string(ModLoader)',
-            (item) => checkEnum(ModLoader, item));
+        checkConfigArray(obj.loaders, 'Target', 'loaders', undefined, 'string(ModLoader)',
+            (item) => checkEnum(ModLoader, item), false);
 
         // 整合包格式
-        checkConfigArray(obj.formats, 'Target', 'formats', 'string(PackFormat)',
-            (item) => checkEnum(PackFormat, item));
+        checkConfigArray(obj.formats, 'Target', 'formats', undefined, 'string(PackFormat)',
+            (item) => checkEnum(PackFormat, item), false);
 
         return new PackTarget(mcVersions, obj.loaders, obj.formats);
     }

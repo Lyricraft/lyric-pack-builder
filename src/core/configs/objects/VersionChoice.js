@@ -21,7 +21,7 @@ export class VersionChoice {
     }
 
     static fromObj(obj, defaultChoice = DEFAULT_AUTO_VERSION_CHOICE) {
-        checkConfigEnum(obj.choice, "VersionChoice", 'choice', 'string(AutoVersionChoice)', AutoVersionChoice, true);
+        const choice = checkConfigEnum(obj.choice, "VersionChoice", 'choice', 'string(AutoVersionChoice)', AutoVersionChoice, defaultChoice);
 
         if (obj.choice === AutoVersionChoice.STATIC && !obj.version) {
             throw new ConfigFieldError("VersionChoice", 'version', t('error.configs.choiceMissingWithStaticChoice'));
@@ -48,6 +48,6 @@ export class VersionChoice {
             }
         }
 
-        return new VersionChoice(version, obj.choice??defaultChoice);
+        return new VersionChoice(version, choice);
     }
 }
