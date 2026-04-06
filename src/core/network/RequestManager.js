@@ -9,6 +9,12 @@ import {HttpError} from "./HttpError.js";
 
 // 发现提交信息写得有点点小毛病，强迫症受不了。准备修正提交，但又不能直接改提交信息，必须有文件更改才能修正。所以写了这行注释，就可以用这个变更去修正提交啦！
 
+/*
+    config:
+        int autoRetryTimes
+        function requestAgainCallback(Error e, function requestFunc, any[] args) : bool
+ */
+
 export class RequestManager{
     constructor(requestInterval, config = {}){
         if (!Number.isInteger(requestInterval) || requestInterval < 0 || !this.#checkConfig(config)){

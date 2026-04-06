@@ -1,5 +1,8 @@
 import path from 'path';
 import {parseFileYaml} from "./configs/parser.js";
+import {ModrinthApi} from "./platforms/modrinth/ModrinthApi.js";
+import {RequestManager} from "./network/RequestManager.js";
+import {CurseforgeApi} from "./platforms/curseforge/CurseforgeApi.js";
 
 const lpbVersion = '0.2.0'
 
@@ -11,6 +14,9 @@ export class LpbApp{
 
         // builder
         this.builderConfig = null;
+
+        // bootstrap
+        this.buildConfigPath = path.join('lpb/builder.yml');
 
         // prebuild
         this.packYmlPath = path.join('lpb/pack.yml');
@@ -25,10 +31,21 @@ export class LpbApp{
         this.modrinthManager = null;
         this.curseforgeApi = null;
         this.curseforgeManager = null;
+        this.curseforgeApiKey = "";
+
+        // pack
+        // ncpDir 已定义
+        this.distDirs = {
+            default: path.join('dist'),
+            modrinth: path.join('modrinth'),
+            curseforge: path.join('curseforge'),
+        }
     }
 
     /*
         模块大全
+
+        请务必核对准确。不会专门做值校验！
 
         builder：
             string builderConfigPath
@@ -45,8 +62,13 @@ export class LpbApp{
             string ncpDir
 
         platforms:
-            bool modrinth
-            string curseforgeApiKey
+            object modrinth:
+                int requestInterval (0-60000)
+                int autoRetryTimes (0-3)
+            object curseforge:
+                int requestInterval (0-60000)
+                int autoRetryTimes (0-3)
+                string apiKey
 
         pack:
             string ncpDir
@@ -58,6 +80,11 @@ export class LpbApp{
         // builder
         if (models.builder) {
             this.builderConfig = await parseFileYaml(models.builder.builderConfigPath);
+        }
+
+        // bootstrap
+        if (models.bootstrap) {
+            this.buildConfigPath = models.bootstrap.buildConfigPath ?? this.buildConfigPath;
         }
 
         // prebuild
@@ -72,7 +99,27 @@ export class LpbApp{
 
         // platforms
         if (models.platforms) {
+            if (models.platforms.modrinth) {
+                this.modrinthApi = new ModrinthApi();
+                this.modrinthManager = new RequestManager(models.platforms.modrinth.requestInterval,
+                    {autoRetryTimes: models.platforms.modrinth.autoRetryTimes});
+            }
+            if (models.platforms.curseforge) {
+                this.curseforgeApi = new CurseforgeApi();
+                this.curseforgeManager = new RequestManager(models.platforms.curseforge.requestInterval,
+                    {autoRetryTimes: models.platforms.curseforge.autoRetryTimes});
+                this.curseforgeApiKey = models.platforms.curseforge.apiKey;
+            }
+        }
 
+        // pack
+        if (models.pack) {
+            this.ncpDir = models.pack.ncpDir ?? this.ncpDir;
+            if (models.pack.dist) {
+                for (const key in models.pack.dist) {
+                    this.distDirs[key] = models.pack.dist[key];
+                }
+            }
         }
     }
 }
