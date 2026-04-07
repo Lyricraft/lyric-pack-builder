@@ -17,6 +17,7 @@ import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {CurseforgeModVersionPage} from "./CurseforgeModVersionPage.js";
 import {DependencyInfo, DependencyType} from "../objects/DependencyInfo.js";
 import {ModFile} from "../objects/ModFile.js";
+import logger from "../../log/logger.js";
 
 export const INVALID_CURSEFORGE_API_KEY_ERROR = 'invalidCurseforgeApiKey';
 const API_BASE = 'https://api.curseforge.com/v1';
@@ -133,7 +134,7 @@ export class CurseforgeApi {
                 updatedAt: Date.parse(obj.dateReleased),
             });
         } catch (e) {
-            // TODO: 此处应该输出一行警告日志
+            logger.warn(t('warn.platformApi.invalidResponse', 'curseforge', 'modInfo', e.message));
             modInfo = null;
         }
         return modInfo;
@@ -242,7 +243,7 @@ export class CurseforgeApi {
                     publishedAt: Date.parse(item.fileDate),
                 });
             } catch (e) {
-                // TODO: 此处应该输出一行警告日志
+                logger.warn(t('warn.platformApi.invalidResponse', 'curseforge', 'modVersion', e.message));
                 modVersion = null;
             }
             if (modVersion) {

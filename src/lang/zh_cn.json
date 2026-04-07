@@ -15,6 +15,7 @@
     "error.versionRangeType.notAVersion": "用于区间检查的参数必须是一个 Version 实例，但提供了：$",
 
     "error.network.cannotRequestMsg": "请求 URL '$' 失败：\n$",
+    "warn.network.cannotRequest": "请求 URL '$' 时出现异常：$",
 
     "error.platformApi.invalidTestResponseMsg": "测试 $ API 时，服务器返回了无效的结果：$",
     "error.platformApi.invalidResponseMsg": "$ API 返回的结果无效：\n$",
@@ -22,6 +23,7 @@
     "error.platformApi.invalidArgs": "请求 $ API 的参数错误：$",
     "error.platformApi.invalidArgsInfo": "请求 $ API 的参数错误。$ 应当为 $，但提供了 $",
     "error.platformApi.DataMissingMsg": "请求 $ API 时，需要的数据 $ 缺失或损坏：\n$",
+    "warn.platformApi.invalidResponse": "$ API 返回的 $ 信息无法解析，此信息将被跳过。详细消息：$",
 
     "error.curseforge.invalidContentType": "无效的 CurseForge 项目类型：$",
     "error.curseforge.invalidApiKey": "CurseForge API Key 缺失或无效",

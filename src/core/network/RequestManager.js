@@ -2,6 +2,8 @@ import {ArgsError} from "../public/errors.js";
 import {deepMerge} from "../public/type.js";
 import {sleep} from "../public/control.js";
 import {HttpError} from "./HttpError.js";
+import logger from "../log/logger.js";
+import {t} from "../i18n/translate.js";
 
 /*
     求木之长，必故其根本。
@@ -70,7 +72,7 @@ export class RequestManager{
                 tryTimes++;
                 return await func(...args);
             } catch (e) {
-                // TODO: 此处应输出一行警告日志
+                logger.warn(t('warn.network.cannotRequest'), func.name, e.message);
                 if (e instanceof HttpError || e.response?.status) {
                     const status = e instanceof HttpError ? e.status : e.response.status;
 
