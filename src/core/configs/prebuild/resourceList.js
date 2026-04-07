@@ -8,9 +8,12 @@ import {
 import {deepClone, isPlainObject, StringType, stringUsable} from "../../public/type.js";
 import {t} from "../../i18n/translate.js";
 import {getRandomIntId} from "../../public/calculate.js";
-import {checkConfigArray, checkConfigField, checkConfigStringChars} from "../checker.js";
+import {checkConfigArray, checkConfigField, checkConfigStringChars, checkConfigStringType} from "../checker.js";
 import {Condition} from "../objects/conditions.js";
 import {parseInnerObj} from "../parser.js";
+
+// 如果能一次做到极致的完美，那为什么还有经年累月的修复与优化呢？
+// 与其原地踱步，不如先把纠结抛诸脑后，先去铺就前面的路。
 
 export class ResourceLike {
     constructor(id, type) {
@@ -71,7 +74,7 @@ export class InlineResource extends ResourceLike {
     }
 
     async fetch(resourceDirPath) {
-        // TODO：写解析内联资源并对象化的逻辑
+        // TODO: 写解析内联资源并对象化的逻辑
     }
 }
 
@@ -218,12 +221,26 @@ export class ResourceList {
         // 先把所有 groups 解析了
         const unsortedGroupMap = new Map();
         for (const groupObj of array) {
-            // 必须是对象
-            checkConfigField(groupObj, 'ResourceList', 'groups[id=?]', 'object(Group)',
-                (arg) => isPlainObject(arg));
-            // 解析并检查
-            const group = parseInnerObj(groupObj, 'ResourceList', `groups[id=${groupObj?.id??'?'}]`,
-                (arg) => ResourceGroup.fromObj(arg));
+            let group;
+            // 是简写的 resource 引用？
+            if (typeof groupObj === 'string') {
+                checkConfigStringType(groupObj, 'ResourceList', 'groups[id=?]', undefined,
+                    'string(ResourceId)', StringType.FILE_PATH);
+                group = ResourceGroup.fromObj({resources: [groupObj]});
+            } else {
+                // 其余情况都必须是对象
+                checkConfigField(groupObj, 'ResourceList', 'groups[id=?]', 'object(Group)',
+                    (arg) => isPlainObject(arg));
+                // 是不是直接写的内联 resource？（使用是否含有 type 判别）
+                if (Object.hasOwn(groupObj, 'type')) {
+                    group = ResourceGroup.fromObj({resources: [groupObj]});
+                } else {
+                    // 最后还有两种情况，一种是完整形式，一种是将 resource 和 option 简写成一层，
+                    // 都可以直接交给 ResourceGroup.fromObj 来处理。
+                    group = parseInnerObj(groupObj, 'ResourceList', `groups[id=${groupObj?.id??'?'}]`,
+                        (arg) => ResourceGroup.fromObj(arg));
+                }
+            }
             // 防止重复 id
             if (unsortedGroupMap.has(group.id)) {
                 throw new ConfigError(t('error.configs.duplicateId', 'Group', group.id), `groups[id=${group.id}]`)
