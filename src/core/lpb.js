@@ -1,7 +1,7 @@
 import path from 'path';
 import {parseFileYaml} from "./configs/parser.js";
 import {ModrinthApi} from "./platforms/modrinth/ModrinthApi.js";
-import {RequestManager} from "./network/RequestManager.js";
+import {HttpRequester} from "./network/HttpRequester.js";
 import {CurseforgeApi} from "./platforms/curseforge/CurseforgeApi.js";
 
 const lpbVersion = '0.2.0'
@@ -28,10 +28,7 @@ export class LpbApp{
 
         // platforms
         this.modrinthApi = null;
-        this.modrinthManager = null;
         this.curseforgeApi = null;
-        this.curseforgeManager = null;
-        this.curseforgeApiKey = "";
 
         // pack
         // ncpDir 已定义
@@ -100,15 +97,17 @@ export class LpbApp{
         // platforms
         if (models.platforms) {
             if (models.platforms.modrinth) {
-                this.modrinthApi = new ModrinthApi();
-                this.modrinthManager = new RequestManager(models.platforms.modrinth.requestInterval,
-                    {autoRetryTimes: models.platforms.modrinth.autoRetryTimes});
+                this.modrinthApi = new ModrinthApi(
+                    new HttpRequester(models.platforms.modrinth.requestInterval,
+                        {autoRetryTimes: models.platforms.modrinth.autoRetryTimes})
+                );
             }
             if (models.platforms.curseforge) {
-                this.curseforgeApi = new CurseforgeApi();
-                this.curseforgeManager = new RequestManager(models.platforms.curseforge.requestInterval,
-                    {autoRetryTimes: models.platforms.curseforge.autoRetryTimes});
-                this.curseforgeApiKey = models.platforms.curseforge.apiKey;
+                this.curseforgeApi = new CurseforgeApi(
+                    new HttpRequester(models.platforms.curseforge.requestInterval,
+                        {autoRetryTimes: models.platforms.curseforge.autoRetryTimes}),
+                    models.platforms.curseforge.apiKey
+                );
             }
         }
 

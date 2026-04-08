@@ -1,4 +1,3 @@
-import axios from "axios";
 import {t} from "../../i18n/translate.js";
 import {McContent, ModLoader, ModSideSupport, PubPlatform, VersionStage, VersionStageName} from "../../mc/mcMods.js";
 import {
@@ -18,41 +17,39 @@ import {CurseforgeModVersionPage} from "./CurseforgeModVersionPage.js";
 import {DependencyInfo, DependencyType} from "../objects/DependencyInfo.js";
 import {ModFile} from "../objects/ModFile.js";
 import logger from "../../log/logger.js";
+import {HttpRequestMethod} from "../../network/HttpRequest.js";
 
 export const INVALID_CURSEFORGE_API_KEY_ERROR = 'invalidCurseforgeApiKey';
 const API_BASE = 'https://api.curseforge.com/v1';
 
 export class CurseforgeApi {
-    constructor(key) {
+    constructor(requester ,key) {
+        this.setRequester(requester);
+        this.headers = {};
         this.setKey(key);
+    }
+
+    setRequester(requester) {
+        this.requester = requester;
+        this.requester.margeConfig({errorHandler: this.#httpErrorHandler});
     }
 
     setKey(key) {
         this.key = key;
-        this.requestConfig = {
-            headers: {
-                'x-api-key': key,
-            }
-        };
+        this.headers['x-api-key'] = key;
     }
 
-    async #request(url, config = this.requestConfig) {
-        let result;
-        try {
-            result = (await axios.get(url.toString(), config));
-        } catch (e) {
-            if (e.response){
-                if (e.response.status === 403 || e.response.status === 401) {
-                    throw new HttpError(t('error.curseforge.invalidApiKey'), e.response.status);
-                }
-                if (e.response.status === 404) {
-                    throw new HttpError(t('error.platformApi.invalidProject"', PubPlatform.CURSEFORGE, url), 404);
-                }
-                throw new HttpError(t('error.network.cannotRequestMsg', url.toString(), e), e.response.status);
+    #httpErrorHandler(e, rq) {
+        if (e.response){
+            if (e.response.status === 403 || e.response.status === 401) {
+                throw new HttpError(t('error.curseforge.invalidApiKey'), e.response.status);
             }
-            throw new Error(t('error.network.cannotRequestMsg', url.toString(), e));
+            if (e.response.status === 404) {
+                throw new HttpError(t('error.platformApi.invalidProject"', PubPlatform.CURSEFORGE, rq.getSummary), 404);
+            }
+            throw new HttpError(t('error.network.cannotRequestMsg', rq.getSummary, e), e.response.status);
         }
-        return result;
+        throw new Error(t('error.network.cannotRequestMsg', rq.getSummary(), e));
     }
 
     #urlWithGameId(str) {
@@ -64,7 +61,7 @@ export class CurseforgeApi {
     async test(){
         const requestUrl = new URL(`${API_BASE}/games/${CURSEFORGE_GAME_ID}`);
 
-        const obj = (await this.#request(requestUrl)).data;
+        const obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString(), null, this.headers)).data;
 
         if (!obj.data || obj.data.id !== CURSEFORGE_GAME_ID || !stringUsable(obj.data.slug)) {
             throw new Error(t('error.platformApi.invalidTestResponseMsg', PubPlatform.MODRINTH, obj));
@@ -85,7 +82,7 @@ export class CurseforgeApi {
 
         let obj;
         try {
-            obj = (await this.#request(requestUrl)).data;
+            obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString(), null, this.headers)).data;
         } catch (e) {
             if (e.status === 404) {
                 return null;
@@ -105,7 +102,7 @@ export class CurseforgeApi {
 
         let obj;
         try {
-            obj = (await this.#request(requestUrl)).data;
+            obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString(), null, this.headers)).data;
         } catch (e) {
             if (e.status === 404) {
                 return null;
@@ -187,7 +184,7 @@ export class CurseforgeApi {
             requestUrl.searchParams.set('releaseType', curseforgeReleaseTypeBiMap.get(versionStage.toString()).toString());
         }
 
-        const obj = (await this.#request(requestUrl)).data;
+        const obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString(), null, this.headers)).data;
 
         if (!Array.isArray(obj.data)) {
             throw new Error(t('error.platformApi.invalidResponseMsg', PubPlatform.CURSEFORGE, obj));

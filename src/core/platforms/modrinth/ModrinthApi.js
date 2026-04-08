@@ -1,7 +1,5 @@
-import axios from "axios";
 import {t} from "../../i18n/translate.js";
 import {ModInfo} from "../objects/ModInfo.js";
-import {Version} from "../../objects/versions.js";
 import {PubPlatform, ModLoader, VersionStage} from "../../mc/mcMods.js";
 import {ModVersionCollection} from "../objects/ModVersionCollection.js";
 import {checkEnum} from "../../public/type.js";
@@ -10,17 +8,25 @@ import {DependencyInfo} from "../objects/DependencyInfo.js";
 import {ModVersionNumber} from "../objects/ModVersionNumber.js";
 import {McVersion} from "../../mc/mcVersion.js";
 import {ModFile, ModFileHashType} from "../objects/ModFile.js";
+import {HttpRequestMethod} from "../../network/HttpRequest.js";
 
 const API_BASE = 'https://api.modrinth.com/v2';
 
 export class ModrinthApi {
+    constructor(requester) {
+        this.setRequester(requester);
+    }
+
+    setRequester(requester) {
+        this.requester = requester;
+    }
 
     async test() {
         const requestUrl = new URL('https://staging-api.modrinth.com/');
 
         let obj;
         try {
-            obj = (await axios.get(requestUrl.toString())).data;
+            obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString())).data;
         } catch (error) {
             throw new Error(t('error.network.cannotRequestMsg', requestUrl.toString(), error.message));
         }
@@ -37,7 +43,7 @@ export class ModrinthApi {
 
         let obj;
         try {
-            obj = (await axios.get(requestUrl.toString())).data;
+            obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString())).data;
         } catch (error) {
             if (error.response?.status === 404) {
                 // 没有找到项目
@@ -115,7 +121,7 @@ export class ModrinthApi {
 
         let obj;
         try{
-            obj = (await axios.get(requestUrl.toString())).data;
+            obj = (await this.requester.newRequest(HttpRequestMethod.GET, requestUrl.toString())).data;
         }
         catch(error){
             if (error.response?.status === 404){
