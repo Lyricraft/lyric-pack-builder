@@ -48,6 +48,7 @@
     "error.configs.outOfRange": "$ 的项 $ 值应该在范围 $ 内，但提供了 $",
     "error.configs.duplicateId": "用作 $ 的 id $ 已经被使用了，不能重复使用",
     "error.configs.varietyDefine": "$ 已经定义了 $，不能再定义 $",
+    "error.configs.invalidKey": "键 $ 不能应用于 $",
 
     "error.configs.conditionNotAnObject": "单个条件必须是一个对象，但提供了：$",
     "error.configs.invalidConditionType": "无法识别的条件类型：$",

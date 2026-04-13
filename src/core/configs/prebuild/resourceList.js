@@ -114,7 +114,7 @@ export class ResourceOption {
         }
 
         let condition = parseInnerObj(obj.conditions, 'Option', 'conditions',
-            (array) => Condition.fromArray(array), true);
+            (array) => Condition.fromArray(array), null);
         if (!condition) {
             condition = Condition.always();
         }

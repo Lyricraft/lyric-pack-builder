@@ -10,9 +10,9 @@ import {FileSystemError} from "../public/errors.js";
 import yaml from "yaml";
 import path from "path";
 
-export function parseInnerObj(obj, parent, field, parseFunc, optional = false) {
-    if (optional && !obj) {
-        return null;
+export function parseInnerObj(obj, parent, field, parseFunc, defaultValue = undefined) {
+    if (defaultValue !== undefined && !obj) {
+        return defaultValue;
     }
     if (!obj) {
         throw new ConfigFieldMissingError(parent, field);

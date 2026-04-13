@@ -25,6 +25,22 @@ export const ModSide = {
     CLIENT: 'client',
 }
 
+// 看到下面这些肯定有人要吐了。
+// 可是我觉得很神圣呀！
+
+export const ModSideRequirement = {
+    SERVER: ModSide.SERVER,
+    CLIENT: ModSide.CLIENT,
+    BOTH: 'both',
+}
+
+export const ModSideOption = {
+    SERVER: ModSideRequirement.SERVER,
+    CLIENT: ModSideRequirement.CLIENT,
+    BOTH: ModSideRequirement.BOTH,
+    AUTO: 'auto',
+}
+
 export const ModSideSupport = {
     REQUEST: 'request',
     OPTIONAL: 'optional',
