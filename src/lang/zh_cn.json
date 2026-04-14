@@ -67,5 +67,8 @@
     "error.configs.invalidVersionCondition": "版本选择规则错误：条件版本的条件无效：$",
     "error.configs.invalidVersionConditionMsg": "版本选择规则错误：条件版本的条件无效：\n$",
 
+    "error.configs.invalidResourceDir": "资源路径不合法：$",
+    "error.configs.invalidResourcrFolder": "资源文件夹无效或未定义：$",
+
     "error.build.noConditionHit": "选择 $ 时，没有任何一个选项的条件满足"
 }
