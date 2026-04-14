@@ -14,14 +14,31 @@ export class ResourceDefine {
 
     static fromObj(obj) {
         const main = [];
-        if (isPlainObject(obj.main)) {
+        if (Object.hasOwn(obj, 'type')) {
+            // 直接填写的资源
+            if (Object.hasOwn(obj, 'main')) {
+                throw new ConfigFieldError('ResourceDefine', "",
+                    t('error.configs.varietyDefine', 'ResourceDefine', 'type', 'main'));
+            }
+            // 没有 conditions 的 ResourceItem 会被自动解析为 always
+            main.push(parseInnerObj(obj, 'ResourceDefine', 'main', ResourceItem.from));
+        } else if (isPlainObject(obj.main)) {
+            // main 字段填的是单个资源
+
+            // 现改为不能这样定义！
+            throw new ConfigFieldError('ResourceDefine', 'main',
+                t('error.configs.fieldType', 'ResourceDefine', 'main', 'ResourceItem[]', obj.main));
+
+            /*
             if (Object.hasOwn(obj.main, 'conditions')) {
                 throw new ConfigFieldError('ResourceDefine', 'main',
                     t('error.configs.invalidKey', 'conditions', 'ResourceDefine.main : object(ResourceItem)'));
             }
             // 没有 conditions 的 ResourceItem 会被自动解析为 always
             main.push(parseInnerObj(obj.main, 'ResourceDefine', 'main', ResourceItem.from));
+             */
         } else if (Array.isArray(obj.main)) {
+            // main 字段填的是资源数组
             checkConfigArray(obj.main, 'ResourceDefine', 'main', undefined, 'ResourceItem',
                 function (item) {
                     if (!isPlainObject(item)) {
@@ -31,7 +48,8 @@ export class ResourceDefine {
                 });
         } else {
             throw new ConfigFieldError('ResourceDefine', 'main',
-                t('error.configs.fieldType', 'ResourceDefine', 'main', 'ResourceItem / []', obj.main));
+                t('error.configs.fieldType', 'ResourceDefine', 'main', 'ResourceItem[]', obj.main));
+            // throw new ConfigFieldError('ResourceDefine', 'main', t('error.configs.fieldType', 'ResourceDefine', 'main', 'ResourceItem / []', obj.main));
         }
 
         const secondary = [];
