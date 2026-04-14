@@ -63,4 +63,23 @@ export class ResourceDefine {
 
         return new ResourceDefine(obj.id, main, secondary);
     }
+
+    getMain(context, tracker = null) {
+        for (const item of this.main) {
+            if (item.condition.test(context, tracker)) {
+                return item;
+            }
+        }
+        // TODO: 抛出构建时异常
+    }
+
+    getSecondaries(context, tracker = null) {
+        const secondaries = [];
+        for (const item of this.secondary) {
+            if (item.condition.test(context, tracker)) {
+                secondaries.push(item);
+            }
+        }
+        return secondaries;
+    }
 }

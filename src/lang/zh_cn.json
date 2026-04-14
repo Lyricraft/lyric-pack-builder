@@ -65,5 +65,7 @@
 
     "error.configs.choiceMissingWithStaticChoice": "版本选择规则错误：自动选择规则为 static，但没有提供条件版本",
     "error.configs.invalidVersionCondition": "版本选择规则错误：条件版本的条件无效：$",
-    "error.configs.invalidVersionConditionMsg": "版本选择规则错误：条件版本的条件无效：\n$"
+    "error.configs.invalidVersionConditionMsg": "版本选择规则错误：条件版本的条件无效：\n$",
+
+    "error.build.noConditionHit": "选择 $ 时，没有任何一个选项的条件满足"
 }
