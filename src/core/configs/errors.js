@@ -20,13 +20,18 @@ export class ConfigFileMissingError extends ConfigError {
 
 export class ConfigFileInnerError extends ConfigError {
     constructor(file, e) {
-        super(t('error.configs.fileInnerMsg', file, e.message), e.fieldPath, file);
+        super(t('error.configs.fileInnerMsg', file, e.message), e.field, file);
     }
 }
 
 export class ConfigFieldInnerError extends ConfigError {
     constructor(parent, field, e) {
-        super(t('error.configs.fieldInnerMsg', parent, field, e.message), `${field}.${e.field}`);
+        // field 会被拼接成 field 路径，如果存在空值或 . 会被略过，如果整个都是空，会变成 .
+        let fieldPath = [field, e.field].filter(f => stringUsable(f) && f !== '.').join('.');
+        if (fieldPath.length === 0) {
+            fieldPath = '.'
+        }
+        super(t('error.configs.fieldInnerMsg', parent, field, e.message), fieldPath);
     }
 }
 
