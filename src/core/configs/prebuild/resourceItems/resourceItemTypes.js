@@ -1,7 +1,8 @@
 import {ResourceItemTypes} from "./resourceItem.js";
-import {PlatformResourceContent, PlatformResourceItem} from "./PlatformResourceItem.js";
+import {PlatformResourceItem} from "./platformResourceItem.js";
 import {deepClone} from "../../../public/type.js";
-import {FilesResourceItem} from "./FilesResourceItem.js";
+import {FilesResourceItem} from "./filesResourceItem.js";
+import {PlatformResourceContent} from "../../enums.js";
 
 ResourceItemTypes
     .set(PlatformResourceItem.TYPE, PlatformResourceItem)

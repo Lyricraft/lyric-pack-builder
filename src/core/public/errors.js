@@ -21,6 +21,17 @@ export class ArgsError extends TypedError {
     }
 }
 
+export class ArgTypeError extends TypedError {
+    static TYPE = 'argType';
+
+    constructor(argName, expectedType, actualValue) {
+        super(ArgsError.TYPE, `arg '${argName}' is expected to be ${expectedType}, got ${actualValue}`);
+        this.argName = argName;
+        this.expectedType = expectedType;
+        this.actualValue = actualValue;
+    }
+}
+
 export class FileSystemError extends TypedError {
     static TYPE = 'fileSystem';
 

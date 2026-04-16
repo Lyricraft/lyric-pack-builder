@@ -1,7 +1,7 @@
 import {ResourceItem} from "./resourceItem.js";
 
-export class FilesResourceItem extends ResourceItem {
-    static TYPE = 'files';
+export class PlatformResourceItem extends ResourceItem {
+    static TYPE = 'platform';
 
     constructor(obj) {
         super(obj);
