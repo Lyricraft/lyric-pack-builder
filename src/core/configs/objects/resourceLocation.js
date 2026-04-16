@@ -6,30 +6,25 @@ import {BuiltinFolders, DEFAULT_FOLDER_MAP} from "./resourceFolder.js";
 import path from "path";
 import {TypedError} from "../../public/errors.js";
 
-export class ResourceLocationIncompleteError extends TypedError {
-    static TYPE = 'resourceLocationIncomplete';
-
-    static LackOf = {
-        DIR: 'dir',
-        FILE_NAME: 'fileName',
+export class ResourceDir {
+    constructor(folder, dir) {
+        this.folder = folder;
+        this.dir = dir;
     }
 
-    constructor(lackOf) {
-        super(ResourceLocationIncompleteError.TYPE,
-            lackOf === ResourceLocationIncompleteError.LackOf.DIR ?
-                t('error.configs.resourceLocationLacksDir') : t('error.configs.resourceLocationLacksFILE_NAME'));
-        this.lackOf = lackOf;
+    static fromFolderAndMap(folder, folderMap, dir = "") {
+        return folderMap.has(folder) ? new ResourceDir(folder, dir) : null;
+    }
+
+    fullDir() {
+        return path.join(this.folder ? this.folder.path : BuiltinFolders.BASE.path, this.dir);
     }
 }
 
 export class ResourceLocation {
 
-    /*
-        未定义的 dir 请使用 null，空字符串表示就是目前目录
-     */
-    constructor(folder, dir, fileName) {
-        this.folder = folder;
-        this.dir = dir;
+    constructor(resourceDir, fileName) {
+        this.resourceDir = resourceDir;
         this.fileName = fileName;
     }
 
@@ -38,18 +33,18 @@ export class ResourceLocation {
         if (restPath.length === 0) {
             throw new ConfigFieldTypeError('ResourceLocation', 'path', 'string(ResourcePath)', restPath);
         }
-        return new ResourceLocation(folder, path.dirname(p), path.basename(p));
+        return new ResourceLocation(new ResourceDir(folder, path.dirname(p)), path.basename(p));
     }
 
     static fromDirAndRename(dir, folderMap, rename = null) {
         if (!isNullOrUndefined(rename) && !stringUsable(rename, StringType.FILE_NAME)) {
             throw new ConfigFieldTypeError('ResourceLocation', 'rename', 'string(FileName)', rename);
         }
-        const {folder, restPath} = getFolderAndPath(dir, folderMap);
-        return new ResourceLocation(folder, restPath, rename);
+        const {folder, restDir} = getFolderAndPath(dir, folderMap);
+        return new ResourceLocation(new ResourceDir(folder, restDir), rename);
     }
 
-    static fromObj(obj, folderMap, defaultDir = null) {
+    static fromObj(obj, folderMap, defaultResourceLocation = null) {
         if (Object.hasOwn(obj, 'path')) {
             checkConfigStringType(obj.path, 'ResourceLocation', 'path');
 
@@ -65,41 +60,33 @@ export class ResourceLocation {
         } else {
             let dir = obj.dir;
             if (isNullOrUndefined(dir)) {
-                if (!defaultDir) {
+                if (!defaultResourceLocation) {
                     throw new ConfigFieldMissingError('ResourceLocation', 'path / dir');
                 }
-                dir = defaultDir;
+                dir = defaultResourceLocation.fullDir();
             } else {
                 checkConfigStringType(dir, 'ResourceLocation', 'dir');
             }
-            return ResourceLocation.fromDirAndRename(dir, folderMap, obj.rename??null);
-        }
-    }
 
-    checkIntegrity(defaultResourceLocation = null) {
-        if (!(stringUsable(this.dir) || this.dir === "")) {
-            if (!defaultResourceLocation || !(stringUsable(defaultResourceLocation.dir) || this.dir === "")) {
-                throw new ResourceLocationIncompleteError(ResourceLocationIncompleteError.LackOf.DIR);
+            let name = obj.rename;
+            if (isNullOrUndefined(name)) {
+                if (!defaultResourceLocation) {
+                    throw new ConfigFieldMissingError('ResourceLocation', 'rename');
+                }
+                name = defaultResourceLocation.fileName;
             }
+
+            return ResourceLocation.fromDirAndRename(dir, folderMap, name);
         }
-        if (!stringUsable(this.fileName)) {
-            if (!defaultResourceLocation || !stringUsable(defaultResourceLocation.dir)) {
-                throw new ResourceLocationIncompleteError(ResourceLocationIncompleteError.LackOf.FILE_NAME);
-            }
-        }
-        return this;
     }
 
     fullPath(defaultResourceLocation = null) {
-        this.checkIntegrity();
-        return path.join(this.folder ? this.folder.path : BuiltinFolders.BASE.path,
-            (stringUsable(this.dir) || this.dir === "") ? this.dir : defaultResourceLocation.dir,
-            stringUsable(this.fileName ? this.fileName : defaultResourceLocation.fileName));
+        return path.join(this.resourceDir.fullDir(), this.fileName);
     }
 }
 
 /*
-    返回值：{folder, path}
+    返回值：{ResourceFolder folder, string path}
  */
 function getFolderAndPath(str, folderMap) {
     const obj = {folder: null, path: null};
