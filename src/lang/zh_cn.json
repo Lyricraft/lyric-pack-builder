@@ -69,6 +69,8 @@
 
     "error.configs.invalidResourceDir": "资源路径不合法：$",
     "error.configs.invalidResourcrFolder": "资源文件夹无效或未定义：$",
+    "error.configs.resourceLocationLacksDir": "资源应用位置缺少资源目录",
+    "error.configs.resourceLocationLacksFileName": "资源应用位置缺少文件名",
 
     "error.build.noConditionHit": "选择 $ 时，没有任何一个选项的条件满足"
 }

@@ -2,10 +2,31 @@ import {ConfigFieldError, ConfigFieldMissingError, ConfigFieldTypeError} from ".
 import {t} from "../../i18n/translate.js";
 import {isNullOrUndefined, StringType, stringUsable} from "../../public/type.js";
 import {checkConfigStringType} from "../checker.js";
-import {BuiltinFolders, DEFAULT_FOLDER_MAP} from "./resourceFolders.js";
+import {BuiltinFolders, DEFAULT_FOLDER_MAP} from "./resourceFolder.js";
 import path from "path";
+import {TypedError} from "../../public/errors.js";
+
+export class ResourceLocationIncompleteError extends TypedError {
+    static TYPE = 'resourceLocationIncomplete';
+
+    static LackOf = {
+        DIR: 'dir',
+        FILE_NAME: 'fileName',
+    }
+
+    constructor(lackOf) {
+        super(ResourceLocationIncompleteError.TYPE,
+            lackOf === ResourceLocationIncompleteError.LackOf.DIR ?
+                t('error.configs.resourceLocationLacksDir') : t('error.configs.resourceLocationLacksFILE_NAME'));
+        this.lackOf = lackOf;
+    }
+}
 
 export class ResourceLocation {
+
+    /*
+        未定义的 dir 请使用 null，空字符串表示就是目前目录
+     */
     constructor(folder, dir, fileName) {
         this.folder = folder;
         this.dir = dir;
@@ -53,6 +74,27 @@ export class ResourceLocation {
             }
             return ResourceLocation.fromDirAndRename(dir, folderMap, obj.rename??null);
         }
+    }
+
+    checkIntegrity(defaultResourceLocation = null) {
+        if (!(stringUsable(this.dir) || this.dir === "")) {
+            if (!defaultResourceLocation || !(stringUsable(defaultResourceLocation.dir) || this.dir === "")) {
+                throw new ResourceLocationIncompleteError(ResourceLocationIncompleteError.LackOf.DIR);
+            }
+        }
+        if (!stringUsable(this.fileName)) {
+            if (!defaultResourceLocation || !stringUsable(defaultResourceLocation.dir)) {
+                throw new ResourceLocationIncompleteError(ResourceLocationIncompleteError.LackOf.FILE_NAME);
+            }
+        }
+        return this;
+    }
+
+    fullPath(defaultResourceLocation = null) {
+        this.checkIntegrity();
+        return path.join(this.folder ? this.folder.path : BuiltinFolders.BASE.path,
+            (stringUsable(this.dir) || this.dir === "") ? this.dir : defaultResourceLocation.dir,
+            stringUsable(this.fileName ? this.fileName : defaultResourceLocation.fileName));
     }
 }
 
