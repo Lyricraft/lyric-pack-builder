@@ -54,3 +54,8 @@ export const curseforgeHashAlgo = new BiMap()
     .set(ModFileHashType.SHA256, 2)
     .set(ModFileHashType.SHA512, 3)
     .set(ModFileHashType.MD5, 4);
+
+export const curseforgeContentGateway = new BiMap()
+    .set(McContent.MOD, 'mc-mods')
+    .set(McContent.RESOURCEPACK, 'texture-packs')
+    .set(McContent.SHADER, 'shaders');
