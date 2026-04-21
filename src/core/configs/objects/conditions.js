@@ -1,17 +1,17 @@
-import {ConfigError} from "../errors.js";
+import {ConfigError, ConfigFieldError} from "../errors.js";
 import {t} from "../../i18n/translate.js";
-import {Version, VersionRange} from "../../objects/versions.js";
-import {checkEnum, isPlainObject, StringType, stringUsable} from "../../public/type.js";
+import {VersionRange} from "../../objects/versions.js";
+import {checkEnum, StringType, stringUsable} from "../../public/type.js";
 import {ModLoader, PackFormat} from "../../mc/mcMods.js";
-import {checkConfigField, checkConfigStringType} from "../checker.js";
-import {StringExpressionParser} from "../../utils/stringExpressionParser.js";
-import {all} from "axios";
+import {checkConfigStringType} from "../checker.js";
+import {StringExpressionParser} from "../../utils/StringExpressionParser.js";
 
+// 在这一刻，我明白了：原来屎山，并不一定是丑陋的。
 
-const defaultConditionMap = new Map();
+export const DEFAULT_CONDITION_MAP = new Map();
 
 export function extendConditionMap() {
-    return new Map(defaultConditionMap);
+    return new Map(DEFAULT_CONDITION_MAP);
 }
 
 /*
@@ -40,15 +40,7 @@ export class Condition {
         return new BoolCondition(false);
     }
 
-    static all(conditions) {
-        return new AndCondition({and: conditions});
-    }
-
-    static any(conditions) {
-        return new OrCondition({or: conditions});
-    }
-
-    static fromString(str, conditionMap = defaultConditionMap, dependency = null) {
+    static fromString(str, conditionMap = DEFAULT_CONDITION_MAP, dependencies = null) {
         checkConfigStringType(str, 'condition', '.', undefined, 'string(ConditionExpression)');
         str = str.trim();
         checkConfigStringType(str, 'condition', '.', undefined, 'string(ConditionExpression)');
@@ -57,9 +49,10 @@ export class Condition {
         // 事实上，一个条件表达式可以看作只有一个关键字，其余都是嵌套。
         // 所以在将一个关键字与其参数解析完后，表达式理应已结束。
 
-        const result = expNextCondition(exp, conditionMap, dependency);
-        if (exp.nextValidChar() !== "") {
+        const result = expNextCondition(exp, conditionMap, dependencies);
+        if (stringUsable(exp.nextValidChar())) {
             // 表达式该结束未结束
+            throw new ConfigFieldError("", 'condition',  t('error.configs.expEndNeeded', 'Condition', exp.nowChar()));
         }
         return result;
     }
@@ -72,7 +65,7 @@ class BoolCondition extends Condition {
         this.bool = bool;
     }
 
-    test(context, tracker = null) {
+    test(context, factors = null) {
         return !!this.bool;
     }
 }
@@ -83,9 +76,9 @@ class NotCondition extends Condition {
         this.conditions = conditions;
     }
 
-    test(context, tracker = null) {
-        for (const item of this.arg)
-            if (!item.test(context, tracker)) return true;
+    test(context, factors = null) {
+        for (const item of this.conditions)
+            if (!item.test(context, factors)) return true;
         return false;
     }
 }
@@ -96,9 +89,9 @@ class AndCondition extends Condition {
         this.conditions = conditions;
     }
 
-    test(context, tracker = null) {
-        for (const item of this.arg)
-            if (!item.test(context, tracker)) return false;
+    test(context, factors = null) {
+        for (const item of this.conditions)
+            if (!item.test(context, factors)) return false;
         return true;
     }
 }
@@ -109,50 +102,58 @@ class OrCondition extends Condition {
         this.conditions = conditions;
     }
 
-    test(context, tracker = null) {
-        for (const item of this.arg)
-            if (item.test(context, tracker)) return true;
+    test(context, factors = null) {
+        for (const item of this.conditions)
+            if (item.test(context, factors)) return true;
         return false;
     }
 }
 
-function expNextCondition(exp, conditionMap, dependency) {
+function expNextCondition(exp, conditionMap, dependencies) {
 
     // 读关键字
     exp.nextValidChar();
-    if (exp.isEnded() || !exp.isKeywordBeginning()) {
+    if (exp.isEnded()) {
+        throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedEnd', 'Condition', 'Keyword'));
+    }
+    if (!exp.isKeywordBeginning()) {
         // 不是关键字
+        throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedChar', 'Condition', 'Keyword', exp.nowChar()));
     }
     const keyword = exp.back().nextKeyword();
     if (!stringUsable(keyword)) {
         // 关键字不完整
+        throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedEnd', 'Condition', 'Keyword'));
     }
 
-    exp.back();
     if (keyword === 'TRUE' || keyword === 'FALSE') {
         return new BoolCondition(keyword === 'TRUE');
     } else if (keyword === 'and' || keyword === 'or' || keyword === 'not') {
         const nestedConditions = [];
         if (exp.nextValidChar() !== '(') {
             // 期待 ( 却不是
+            throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedChar', 'Condition', '(', exp.nowChar()));
         }
         while (true) {
             const next = exp.nextValidChar();
             if (!exp.isKeywordBeginning()) {
                 // 期待关键字但不是
+                throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedChar', 'Condition', 'Keyword', exp.nowChar()));
             }
-            exp.back()
-            nestedConditions.push(expNextCondition(exp, conditionMap, dependency));
+            exp.back();
+            nestedConditions.push(expNextCondition(exp, conditionMap, dependencies));
 
             const afterNext = exp.nextValidChar();
-            if (next === "") {
+            if (afterNext === "") {
                 // 缺失 )
+                throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedEnd', 'Condition', ')', 'Keyword'));
             }
-            if (next === ")") {
+            if (afterNext === ")") {
                 break;
             }
-            if (next !== ",") {
+            if (afterNext !== ",") {
                 // 期待 , 或 ) 但都不是
+                throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedChar', 'Condition', ', / )', afterNext));
             }
         }
 
@@ -166,15 +167,16 @@ function expNextCondition(exp, conditionMap, dependency) {
     } else {
         if (conditionMap.has(keyword)) {
             const next = exp.nextValidChar();
-            const endedRegex = /[,\s\]]/;
+            const endedRegex = /[,\s\])]/;
             if (next === "[") {
                 const args = [];
                 while (true) {
-                    const arg = exp.nextArg(endedRegex, false, StringExpressionParser.QUOTES_REGEX);
-                    exp.back();
+                    exp.nextValidChar();
+                    const arg = exp.back().nextArg(endedRegex, false, StringExpressionParser.QUOTES_REGEX);
 
                     if (!stringUsable(arg)) {
                         // 缺失参数
+                        throw new ConfigFieldError("", 'condition',  t('error.configs.expLackArg', 'Condition', 'ConditionArg'));
                     }
                     args.push(arg);
 
@@ -184,6 +186,7 @@ function expNextCondition(exp, conditionMap, dependency) {
                     }
                     if (afterNext !== ',') {
                         // 期待 ] 或 , 但都不是
+                        throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedChar', 'Condition', ', / ]', exp.nowChar()));
                     }
                 }
 
@@ -191,37 +194,41 @@ function expNextCondition(exp, conditionMap, dependency) {
                 if (!exp.isEnded()) {
                     if (exp.nextChar() === '!') {
                         allFit = true;
+                    } else {
+                        exp.back();
                     }
-                    exp.back();
                 }
 
-                return new (conditionMap.get(keyword))(args, allFit, dependency)
+                return new (conditionMap.get(keyword))(args, allFit, dependencies)
             } else {
                 const arg =
                     exp.back().nextArg(endedRegex, true, StringExpressionParser.QUOTES_REGEX);
                 if (!stringUsable(arg)) {
                     // 缺失参数
+                    throw new ConfigFieldError("", 'condition',  t('error.configs.expLackArg', 'Condition', 'ConditionArg'));
                 }
-                exp.back();
-                return new (conditionMap.get(keyword))([arg], false, dependency)
+                return new (conditionMap.get(keyword))([arg], false, dependencies)
             }
         } else {
             // 无法识别的条件类型
+            throw new ConfigFieldError("", 'condition',  t('error.configs.conditionInvalidType', keyword));
         }
     }
 }
 
 class ArrayArgCondition extends Condition {
-    constructor(array, allFit, dependency) {
+    constructor(array, allFit, dependencies) {
         super();
         this.array = [];
         for (const item of array) {
-            this.array.push(this.transformOneArg(item, dependency));
+            this.array.push(this.transformOneArg(item, dependencies));
         }
-        this.allFit = allFit
+        this.allFit = allFit;
     }
 
     test(context, factors = null) {
+        this.prepareTest(context, factors);
+
         for (const item of this.array) {
 
             const result = this.testOne(item, context, factors);
@@ -234,11 +241,11 @@ class ArrayArgCondition extends Condition {
         return this.allFit;
     }
 
-    transformOneArg(arg, dependency = null) {
+    transformOneArg(arg, dependencies = null) {
         // To be overridden
     }
 
-    prepareTest(factors = null) {
+    prepareTest(context, factors = null) {
         // To be overridden
     }
 
@@ -249,184 +256,151 @@ class ArrayArgCondition extends Condition {
 
 class McVersionCondition extends ArrayArgCondition {
 
-    constructor(array, allFit, dependency) {
+    constructor(array, allFit, dependencies = null) {
         if (allFit) {
             // 不能使用 allFIt 要抛错
+            throw new ConfigError(t('error.configs.conditionNotSupportAllFit', 'mcVersion'), '.')
         }
-        super(array, allFit, dependency);
+        super(array, allFit, dependencies);
     }
 
-    transformOneArg(arg, dependency = null) {
+    transformOneArg(arg, dependencies = null) {
         let versionRange;
         try {
             versionRange = VersionRange.fromString(arg);
         } catch (e) {
-            throw new ConfigError(t('error.configs.invalidConditionArgs', '', 'string(VersionRange)', this.arg), '.');
+            throw new ConfigError(t('error.configs.conditionInvalidArgs', 'mcVersion', 'string(VersionRange)', arg), '.');
         }
         return versionRange;
     }
 
-    prepareTest(factors = null) {
+    prepareTest(context, factors = null) {
         if (factors && !factors.mcVersion) {
-            factors.mcVersion = new Map();
+            factors.mcVersion = context.mcVersion;
         }
     }
 
     testOne(item, context, factors = null) {
-        const result = item.fit(context.mcVersion);
+        return item.fit(context.mcVersion);
+    }
+}
+DEFAULT_CONDITION_MAP.set('mcVersion', McVersionCondition);
 
-        if (factors) {
-            const versionRangeString = item.toString();
-            if (!factors.mcVersion.has(versionRangeString)) {
-                factors.mcVersion.set(versionRangeString, result);
+class ModLoaderCondition extends ArrayArgCondition {
+
+    constructor(array, allFit, dependencies) {
+        if (allFit) {
+            // 不能使用 allFit 要抛错
+            throw new ConfigError(t('error.configs.conditionNotSupportAllFit', 'modLoader'), '.')
+        }
+        super(array, allFit, dependencies);
+    }
+
+    transformOneArg(arg, dependencies = null) {
+        if (!checkEnum(ModLoader, arg)) {
+            throw new ConfigError(t('error.configs.conditionInvalidArgs', 'modLoader', 'string(ModLoader)', arg), '.');
+        }
+        return arg;
+    }
+
+    prepareTest(context, factors = null) {
+        if (factors && !factors.mcVersion) {
+            factors.mcVersion = context.mcVersion;
+        }
+    }
+
+    testOne(item, context, factors = null) {
+        return context.modLoader === item;
+    }
+}
+DEFAULT_CONDITION_MAP.set('modLoader', ModLoaderCondition);
+
+class PackFormatCondition extends ArrayArgCondition {
+    constructor(array, allFit, dependencies = null) {
+        if (allFit) {
+            // 不能使用 allFIt 要抛错
+            throw new ConfigError(t('error.configs.conditionNotSupportAllFit', 'packFormat'), '.')
+        }
+        super(array, allFit, dependencies);
+    }
+
+    transformOneArg(arg, dependencies = null) {
+        if (!checkEnum(PackFormat, arg)) {
+            throw new ConfigError(t('error.configs.conditionInvalidArgs', 'PackFormat', 'string(PackFormat)', arg), '.');
+        }
+        return arg;
+    }
+
+    prepareTest(context, factors = null) {
+        if (factors && !factors.packFormat) {
+            factors.packFormat = context.packFormat;
+        }
+    }
+
+    testOne(item, context, factors = null) {
+        return context.packFormat === item;
+    }
+}
+DEFAULT_CONDITION_MAP.set('packFormat', PackFormatCondition);
+
+class OptionCondition extends ArrayArgCondition {
+
+    transformOneArg(arg, dependencies = null) {
+        if (!stringUsable(arg)) {
+            throw new ConfigError(t('error.configs.conditionInvalidArgs', 'option', 'string(OptionPath)', arg), '.');
+        }
+
+        const optionPath = {group: null, option: null};
+        if (arg.includes('.')) {
+            const split = arg.split('.');
+            if (split.length !== 2 || !stringUsable(split[0], StringType.ID) || !stringUsable(split[1], StringType.ID)) {
+                throw new ConfigError(t('error.configs.conditionInvalidArgs', 'option', 'string(OptionPath)', arg), '.');
+            }
+            optionPath.group = split[0];
+            optionPath.option = split[1];
+        } else {
+            if (!stringUsable(arg, StringType.ID)) {
+                throw new ConfigError(t('error.configs.conditionInvalidArgs', 'option', 'string(OptionPath)', arg), '.');
+            }
+            optionPath.group = arg;
+        }
+
+        if (dependencies?.groups) {
+            dependencies.groups.push(optionPath.group);
+        }
+
+        return optionPath;
+    }
+
+    testOne(item, context, factors = null) {
+        // context.options 中存的是 OptionPath 对象，且 group 的值唯一
+        for (const optionPath of context.options) {
+            if (optionPath.group === item.group) {
+                if (!stringUsable(item.option)) {
+                    return true;
+                } else {
+                    return optionPath.option === item.option;
+                }
             }
         }
-
-        return result;
+        return false;
     }
 }
-defaultConditionMap.set('mcVersion', McVersionCondition);
+DEFAULT_CONDITION_MAP.set('option', OptionCondition);
 
-class ModLoaderCondition extends Condition {
-    constructor(obj) {
-        super('modLoader', obj);
-        if (!Array.isArray(this.arg)) {
-            this.arg = new Array(this.arg);
-        }
-        for (const item of this.arg) {
-            if (!checkEnum(ModLoader, item)) {
-                throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'ModLoader / []', this.arg), this.type);
-            }
-        }
-    }
+class ResourceCondition extends ArrayArgCondition {
 
-    test(context, tracker = null) {
-        if (!context.modLoader) {
-            return false;
-        }
-       if (tracker && !tracker.modLoader) {
-           tracker.modLoader = context.modLoader;
-       }
-        return this.arg.includes(context.modLoader);
-    }
-}
-defaultConditionMap.set('modLoader', ModLoaderCondition);
-
-class PackFormatCondition extends Condition {
-    constructor(obj) {
-        super('packFormat', obj);
-        if (!Array.isArray(this.arg)) {
-            this.arg = new Array(this.arg);
-        }
-        for (const item of this.arg) {
-            if (!checkEnum(PackFormat, item)) {
-                throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'PackFormat / []', this.arg), this.type);
-            }
-        }
-    }
-
-    test(context, tracker = null) {
-        if (!context.packFormat) {
-            return false;
-        }
-        if (tracker && !tracker.packFormat) {
-            tracker.packFormat = context.packFormat;
-        }
-        return this.arg.includes(context.packFormat);
-    }
-}
-defaultConditionMap.set('packFormat', PackFormatCondition);
-
-class ReferenceCondition extends Condition {
-    constructor(type, obj) {
-        super(type, obj);
-        if (!Array.isArray(this.arg)) {
-            this.arg = new Array(this.arg);
-        }
-        for (const item of this.arg) {
-            this.checkArg(item);
-        }
-        this.allFit = !!obj.allFit;
-    }
-
-    test(context, tracker = null) {
-        if (tracker?.dependency && !tracker.dependency[this.type]) {
-            tracker.dependency[this.type] = [];
-        }
-
-        for (const item of this.arg) {
-            if (tracker?.dependency && !tracker.dependency[this.type].includes(item)) {
-                tracker.dependency[this.type].push(item);
-            }
-
-            const result = this.testOne(item, context);
-            if (this.allFit) {
-                if (!result) return false;
-            } else {
-                if (result) return true;
-            }
-        }
-        return this.allFit;
-    }
-
-    checkArg(arg) {
-        // To be overridden
-    }
-
-    testOne(item, context) {
-        // To be overridden
-    }
-}
-
-class GroupCondition extends ReferenceCondition {
-    constructor(obj) {
-        super('group', obj);
-    }
-
-    checkArg(arg) {
-        if (!stringUsable(arg, StringType.FILE_NAME)) {
-            throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[*]`, 'GroupId', this.arg), this.type);
-        }
-    }
-
-    testOne(item, context) {
-        return (context.groups?.includes(item));
-    }
-}
-defaultConditionMap.set('group', GroupCondition);
-
-class OptionCondition extends ReferenceCondition {
-    constructor(obj) {
-        super('option', obj);
-    }
-
-    checkArg(arg) {
-        if (!stringUsable(arg, StringType.FILE_NAME) || !/^[^.]+\.[^.]+$/.test(arg)) {
-            throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[*]`, 'OptionPath', this.arg), this.type);
-        }
-    }
-
-    testOne(item, context) {
-        return (context.options?.includes(item));
-    }
-}
-defaultConditionMap.set('option', OptionCondition);
-
-class ResourceCondition extends ReferenceCondition {
-    constructor(obj) {
-        super('resource', obj);
-    }
-
-    checkArg(arg) {
+    transformOneArg(arg, dependencies = null) {
         if (!stringUsable(arg.replace(/^inline:/, ""), StringType.FILE_PATH)) {
             // resourcePath 可能以 inline: 开头，其余情况不应存在冒号
-            throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[*]`, 'ResourcePath', this.arg), this.type);
+            throw new ConfigError(t('error.configs.conditionInvalidArgs', `resource`, 'string(ResourcePath)', arg), '.');
         }
+        return arg;
     }
 
-    testOne(item, context) {
+    testOne(item, context, factors = null) {
         return (context.resources?.includes(item));
     }
 }
-defaultConditionMap.set('resource', ResourceCondition);
+DEFAULT_CONDITION_MAP.set('resource', ResourceCondition);
 

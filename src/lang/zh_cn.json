@@ -50,10 +50,14 @@
     "error.configs.varietyDefine": "$ 已经定义了 $，不能再定义 $",
     "error.configs.invalidKey": "键 $ 不能应用于 $",
 
-    "error.configs.conditionNotAnObject": "单个条件必须是一个对象，但提供了：$",
-    "error.configs.invalidConditionType": "无法识别的条件类型：$",
-    "error.configs.multipleConditionTypes": "条件被定义了多个类型：$",
-    "error.configs.invalidConditionArgs": "条件 $ 的参数应该是 $，但提供了 $",
+    "error.configs.expEndNeeded": "$ 表达式应当结束，但仍出现 $",
+    "error.configs.expUnexpectedChar": "$ 表达式需要 $，但出现了 $",
+    "error.configs.expUnexpectedEnd": "$ 表达式意外结束，缺少 $",
+    "error.configs.expLackArg": "$ 表达式缺失参数 $",
+
+    "error.configs.conditionInvalidType": "无法识别的条件类型：$",
+    "error.configs.conditionNotSupportAllFit": "条件类型 $ 不支持 allFit 选项",
+    "error.configs.conditionInvalidArgs": "条件 $ 的参数应该是 $，但提供了 $",
 
     "error.configs.conditionSelfDependency": "条件出现自指依赖：资源组 $ 的条件依赖自身的 $ 对象 $",
     "error.configs,conditionCircularDependency": "条件出现循环依赖：资源组 $ 的条件出现了循环依赖，依赖链：\n$",

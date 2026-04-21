@@ -1,14 +1,62 @@
-import {parseFileYaml} from "./core/configs/parser.js";
-import path from "path";
-import {ResourceList} from "./core/configs/prebuild/resourceList.js";
+import {Condition, DEFAULT_CONDITION_MAP} from "./core/configs/objects/conditions.js";
 
-// 前天没写代码是因为出去玩下午回来太累，就去玩酒狐了。
-// 本来准备昨天写代码的，还能写一行“清明时节雨纷纷”的注释，奈何昨天中午没下雨。就去玩酒狐了。玩到晚上开始下雨了，但是已经玩开了，就只能继续玩了。
-// 虽然 Github 上的贡献图少了两个绿点，但是，月有阴晴圆缺。
-// 写在 debug.js 里面的注释没人会看，毕竟调试脚本很快就会换。
+const tests = [
+    // 基础常量
+    "TRUE",
+    "FALSE",
 
-const obj = await parseFileYaml(path.join('lpb', 'list.yml'));
+    // 基础单参数条件
+    "mcVersion 1.18.2",
+    "modLoader forge",
+    "packFormat modrinth",
+    "option test.id",
+    "resource assets/texture.png",
 
-const rl = ResourceList.fromArray(obj.groups);
+    // 带引号单参数
+    "mcVersion '[1.18,1.20)'",
+    "resource \"inline:custom_id\"",
 
-console.log(rl);
+    // 逻辑算子基础
+    "and(mcVersion 1.19.2)",
+    "and(modLoader fabric, packFormat curseforge)",
+    "or(TRUE, FALSE)",
+    "not(modLoader quilt)",
+    "not(mcVersion 1.20.1, option main.config)",
+
+    // 多参数 []
+    "modLoader [forge, neoforge]",
+    "packFormat [modrinth, curseforge]",
+    "option [a.b, c.d]!",
+    "resource [inline:id1, inline:id2]!",
+    "mcVersion ['1.18.2', \"1.19.2\", 1.20.1]",
+
+    // 简单嵌套
+    "and(mcVersion 1.18.2, or(modLoader fabric, modLoader quilt))",
+    "or(not(packFormat curseforge), TRUE)",
+    "not(and(option test.id, resource assets/icon.png))",
+
+    // 三层嵌套
+    "and(or(mcVersion 1.20, modLoader [forge, neoforge]), not(option [a.b, c.d]!))",
+
+    // 空白符（换行/缩进）
+    "and(\n\tmcVersion '[1.18,1.21)',\n\tor(\n\t\tmodLoader fabric,\n\t\tresource \"inline:test\"\n\t)\n)",
+
+    // 紧凑无空格写法
+    "and(modLoader[forge,neoforge],option config)",
+
+    // 混合引号 + 后缀 + 嵌套
+    "or(resource ['file/path.png',\"inline:uid\"],not(packFormat curseforge))",
+
+    // 复杂完整用例
+    "and(\n    mcVersion [1.18.2,1.19.2,1.20.1],\n    modLoader [forge, neoforge],\n    or(\n        option [client.setting, server.core]!,\n        not(resource assets/lang/en.json, TRUE)\n    ),\n    not(packFormat curseforge)\n)"
+];
+
+let dependencies;
+let condition;
+
+for (const test of tests) {
+    dependencies = {};
+    condition = Condition.fromString(test, DEFAULT_CONDITION_MAP, dependencies);
+    console.log(dependencies);
+    console.log(condition);
+}

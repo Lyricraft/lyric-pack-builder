@@ -1,3 +1,14 @@
+import {stringUsable} from "../public/type.js";
+
+function stringOrArrayOrRegexTest(template, str) {
+    if (Array.isArray(template)) {
+        return template.includes(str);
+    }
+    if (typeof template === 'string') {
+        return template === str;
+    }
+    return template.test(str);
+}
 
 export class StringExpressionParser {
     constructor(str) {
@@ -13,7 +24,8 @@ export class StringExpressionParser {
     }
 
     nextChar() {
-        if (this.index < this.str.length - 1) {
+        // 允许到达最后索引的后一个，以避免边界上的 back() 问题
+        if (this.index < this.str.length) {
             this.index++;
             return this.str.substring(this.index, this.index + 1);
         } else {
@@ -66,7 +78,11 @@ export class StringExpressionParser {
 
         while (true) {
             const char = this.nextChar();
-            if (char.length === 0 || !keywordCharRegex.test(char)) {
+            if (!stringUsable(char)) {
+                break;
+            }
+            if (!keywordCharRegex.test(char)) {
+                this.back();
                 break;
             }
             sb.push(char);
@@ -80,7 +96,7 @@ export class StringExpressionParser {
 
         while (true) {
             const char = this.nextChar();
-            if (char.length === 0) {
+            if (!stringUsable(char)) {
                 if (!allowEnd) {
                     return "";
                 }
@@ -88,7 +104,7 @@ export class StringExpressionParser {
                     break;
                 }
             }
-            if (endedRegex.test(char)) {
+            if (stringOrArrayOrRegexTest(endedRegex, char)) {
                 break;
             }
             sb.push(char);
@@ -99,14 +115,22 @@ export class StringExpressionParser {
 
     static QUOTES_REGEX = /["']/;
 
+    // 如果是引号结束，游标将指向引号，下一个离开表达式
+    // 如果是匹配结束正则的东西，游标将指向此东西前一位，下一个离开表达式到此东西
     nextArg(endedRegex, allowEnd = false, quotesRegex = null) {
-        if (quotesRegex && quotesRegex.test(this.nowChar())) {
-            const quote = this.nowChar();
-            if (this.nextChar() === "") {
+        const next = this.nextChar();
+        if (!stringUsable(next)) {
+            return "";
+        }
+        if (quotesRegex && quotesRegex.test(next)) {
+            const quote = next;
+            if (!stringUsable(this.nextChar())) {
                 return "";
             }
-            return this.until(quote);
+            return this.back().until(quote);
         }
-        return this.until(endedRegex, allowEnd);
+        const result = this.back().until(endedRegex, allowEnd);
+        this.back();
+        return result;
     }
 }

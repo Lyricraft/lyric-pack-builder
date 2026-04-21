@@ -3,22 +3,29 @@ export const StringType = {
     FILE_NAME: 'fileName',
     PATH: 'path',
     FILE_PATH: 'filePath',
+    ID: 'id',
 }
+
+const stringTestMap = new Map()
+    .set(StringType.FILE_NAME, /^[^/*?:"<>|]+$/)
+    // 所有文件系统路径均只能用正斜杠
+    .set(StringType.PATH, /^(?!.*\/\/)[^/*?:"<>|]+(?:\/[^/*?:"<>|]+)*$/)
+    .set(StringType.FILE_PATH, /^(?!.*\/\/)[^/*?:"<>|]+(?:\/[^/*?:"<>|]+)*$/)
+    // 由字母、数字、下划线、连字符组成。以字母或下划线开头，不能以连字符结尾
+    .set(StringType.ID, /^[A-Za-z_][A-Za-z0-9_-]*(?<!-)$/)
+;
+
 export function stringUsable(str, type = StringType.STRING) {
-    if (typeof str !== 'string' || str.length < 1) {
+    if (typeof str !== 'string' || str.length < 1 || str === '\0') {
         return false;
     }
     if (type === StringType.STRING) {
         return true;
     }
-    if (type === StringType.FILE_NAME) {
-        return !/[\/\\:*?"<>|]/.test(str);
-    }
-    if (type === StringType.PATH) {
-        return !/[\\/:<>|"?*]|\/\//.test(str);
-    }
-    if (type === StringType.FILE_PATH) {
-        return !/[\\:*?"<>|]|[\/\\]$/.test(str);
+
+    const regex = stringTestMap.get(type);
+    if (regex) {
+        return regex.test(str);
     }
 
     return false;
