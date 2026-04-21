@@ -3,13 +3,15 @@ import {t} from "../../i18n/translate.js";
 import {Version, VersionRange} from "../../objects/versions.js";
 import {checkEnum, isPlainObject, StringType, stringUsable} from "../../public/type.js";
 import {ModLoader, PackFormat} from "../../mc/mcMods.js";
-import {checkConfigField} from "../checker.js";
+import {checkConfigField, checkConfigStringType} from "../checker.js";
+import {StringExpressionParser} from "../../utils/stringExpressionParser.js";
+import {all} from "axios";
 
 
-const conditionMap = new Map();
+const defaultConditionMap = new Map();
 
 export function extendConditionMap() {
-    return new Map(conditionMap);
+    return new Map(defaultConditionMap);
 }
 
 /*
@@ -22,57 +24,20 @@ export function conditionContext(mcVersion, modLoader, packFormat, groups = [], 
 }
 
 export class Condition {
-    constructor(type, obj) {
-        this.type = type;
-        this.arg = obj[type];
+
+    constructor() {
     }
 
-    static from(obj, map = conditionMap, strict = false) {
-        if (!obj || typeof obj !== "object") {
-            throw new ConfigError(t('error.configs.conditionNotAnObject', obj), "condition");
-        }
-
-        let used = null;
-        for (const key in obj) {
-            if (map.has(key)) {
-                if (strict) {
-                    if (used) {
-                        throw new ConfigError(t('error.configs.multipleConditionTypes', obj), "condition");
-                    }
-                    used = new (map.get(key))(obj, map);
-                } else {
-                    return new (map.get(key))(obj, map)
-                }
-            }
-        }
-        if (used) {
-            return used;
-        }
-        throw new ConfigError(t('error.configs.invalidConditionType', JSON.stringify(obj)), "condition");
-    }
-
-    static fromArray(array) {
-        if (!Array.isArray(array) || array.length === 0) {
-            return Condition.always();
-        }
-        if (array.length === 1) {
-            return Condition.from(checkConfigField(array[0],
-                'conditions', 'item', 'object(Condition)', (obj) => isPlainObject(obj)));
-        }
-        return Condition.all(checkConfigField(array, 'conditions', 'array', 'object(Condition)[]',
-            (arr) => arr.every((obj) => isPlainObject(obj))));
-    }
-
-    test(context, tracker = null) {
+    test(context, factors = null) {
         return false;
     }
 
     static always() {
-        return new BoolCondition({bool: true});
+        return new BoolCondition(true);
     }
 
     static never() {
-        return new BoolCondition({bool: false});
+        return new BoolCondition(false);
     }
 
     static all(conditions) {
@@ -82,53 +47,53 @@ export class Condition {
     static any(conditions) {
         return new OrCondition({or: conditions});
     }
+
+    static fromString(str, conditionMap = defaultConditionMap, dependency = null) {
+        checkConfigStringType(str, 'condition', '.', undefined, 'string(ConditionExpression)');
+        str = str.trim();
+        checkConfigStringType(str, 'condition', '.', undefined, 'string(ConditionExpression)');
+        const exp = new StringExpressionParser(str);
+
+        // 事实上，一个条件表达式可以看作只有一个关键字，其余都是嵌套。
+        // 所以在将一个关键字与其参数解析完后，表达式理应已结束。
+
+        const result = expNextCondition(exp, conditionMap, dependency);
+        if (exp.nextValidChar() !== "") {
+            // 表达式该结束未结束
+        }
+        return result;
+    }
+
 }
 
 class BoolCondition extends Condition {
-    constructor(obj) {
-        super('bool', obj);
-        if (typeof this.arg !== 'boolean') {
-            throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'bool', this.arg), this.type);
-        }
+    constructor(bool) {
+        super();
+        this.bool = bool;
     }
 
     test(context, tracker = null) {
-        return !!this.arg;
+        return !!this.bool;
     }
 }
-conditionMap.set('bool', BoolCondition)
 
 class NotCondition extends Condition {
-    constructor(obj, map = conditionMap) {
-        super('not', obj);
-        if (Array.isArray(this.arg)) {
-            this.arg = new AndCondition({and: this.arg});
-        }
-        if (this.arg && typeof this.arg === 'object') {
-            this.arg = Condition.from(this.arg, map);
-            return;
-        }
-        throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'Condition / []', this.arg), this.type);
+    constructor(conditions) {
+        super();
+        this.conditions = conditions;
     }
 
     test(context, tracker = null) {
-        return !this.arg.test(context, tracker);
+        for (const item of this.arg)
+            if (!item.test(context, tracker)) return true;
+        return false;
     }
 }
-conditionMap.set('not', NotCondition);
 
 class AndCondition extends Condition {
-    constructor(obj, map = conditionMap) {
-        super('and', obj);
-        if (!Array.isArray(this.arg)) {
-            throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'Condition[]', this.arg), this.type);
-        }
-        for (let i = 0; i < this.arg.length; i++) {
-            if (!this.arg[i] || typeof this.arg[i] !== 'object') {
-                throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[]`, 'Condition', this.arg), this.type);
-            }
-            this.arg[i] = Condition.from(this.arg[i], map);
-        }
+    constructor(conditions) {
+        super();
+        this.conditions = conditions;
     }
 
     test(context, tracker = null) {
@@ -137,20 +102,11 @@ class AndCondition extends Condition {
         return true;
     }
 }
-conditionMap.set('and', AndCondition);
 
 class OrCondition extends Condition {
-    constructor(obj, map = conditionMap) {
-        super('or', obj);
-        if (!Array.isArray(this.arg)) {
-            throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'Condition[]', this.arg), this.type);
-        }
-        for (let i = 0; i < this.arg.length; i++) {
-            if (!this.arg[i] || typeof this.arg[i] !== 'object') {
-                throw new ConfigError(t('error.configs.invalidConditionArgs', `${this.type}[]`, 'Condition', this.arg), this.type);
-            }
-            this.arg[i] = Condition.from(this.arg[i], map);
-        }
+    constructor(conditions) {
+        super();
+        this.conditions = conditions;
     }
 
     test(context, tracker = null) {
@@ -159,37 +115,177 @@ class OrCondition extends Condition {
         return false;
     }
 }
-conditionMap.set('or', OrCondition);
 
-class McVersionCondition extends Condition {
-    constructor(obj) {
-        super('mcVersion', obj);
-        if (!Array.isArray(this.arg)) {
-            this.arg = new Array(this.arg);
+function expNextCondition(exp, conditionMap, dependency) {
+
+    // 读关键字
+    exp.nextValidChar();
+    if (exp.isEnded() || !exp.isKeywordBeginning()) {
+        // 不是关键字
+    }
+    const keyword = exp.back().nextKeyword();
+    if (!stringUsable(keyword)) {
+        // 关键字不完整
+    }
+
+    exp.back();
+    if (keyword === 'TRUE' || keyword === 'FALSE') {
+        return new BoolCondition(keyword === 'TRUE');
+    } else if (keyword === 'and' || keyword === 'or' || keyword === 'not') {
+        const nestedConditions = [];
+        if (exp.nextValidChar() !== '(') {
+            // 期待 ( 却不是
         }
-        for (let i = 0; i < this.arg.length; i++) {
-            try {
-                this.arg[i] = VersionRange.fromString(this.arg[i]);
-            } catch (e) {
-                throw new ConfigError(t('error.configs.invalidConditionArgs', this.type, 'VersionRange / []', this.arg), this.type);
+        while (true) {
+            const next = exp.nextValidChar();
+            if (!exp.isKeywordBeginning()) {
+                // 期待关键字但不是
+            }
+            exp.back()
+            nestedConditions.push(expNextCondition(exp, conditionMap, dependency));
+
+            const afterNext = exp.nextValidChar();
+            if (next === "") {
+                // 缺失 )
+            }
+            if (next === ")") {
+                break;
+            }
+            if (next !== ",") {
+                // 期待 , 或 ) 但都不是
             }
         }
-    }
 
-    test(context, tracker = null) {
-        if (!context.mcVersion) {
-            return false;
+        if (keyword === 'and') {
+            return new AndCondition(nestedConditions);
+        } else if (keyword === 'or') {
+            return new OrCondition(nestedConditions);
+        } else {
+            return new NotCondition(nestedConditions);
         }
-        if (tracker && !tracker.mcVersion) {
-            tracker.mcVersion = context.mcVersion.toString();
+    } else {
+        if (conditionMap.has(keyword)) {
+            const next = exp.nextValidChar();
+            const endedRegex = /[,\s\]]/;
+            if (next === "[") {
+                const args = [];
+                while (true) {
+                    const arg = exp.nextArg(endedRegex, false, StringExpressionParser.QUOTES_REGEX);
+                    exp.back();
+
+                    if (!stringUsable(arg)) {
+                        // 缺失参数
+                    }
+                    args.push(arg);
+
+                    const afterNext = exp.nextValidChar();
+                    if (afterNext === ']') {
+                        break;
+                    }
+                    if (afterNext !== ',') {
+                        // 期待 ] 或 , 但都不是
+                    }
+                }
+
+                let allFit = false;
+                if (!exp.isEnded()) {
+                    if (exp.nextChar() === '!') {
+                        allFit = true;
+                    }
+                    exp.back();
+                }
+
+                return new (conditionMap.get(keyword))(args, allFit, dependency)
+            } else {
+                const arg =
+                    exp.back().nextArg(endedRegex, true, StringExpressionParser.QUOTES_REGEX);
+                if (!stringUsable(arg)) {
+                    // 缺失参数
+                }
+                exp.back();
+                return new (conditionMap.get(keyword))([arg], false, dependency)
+            }
+        } else {
+            // 无法识别的条件类型
         }
-        for (const range of this.arg) {
-            if (range.fit(context.mcVersion)) return true;
-        }
-        return false;
     }
 }
-conditionMap.set('mcVersion', McVersionCondition);
+
+class ArrayArgCondition extends Condition {
+    constructor(array, allFit, dependency) {
+        super();
+        this.array = [];
+        for (const item of array) {
+            this.array.push(this.transformOneArg(item, dependency));
+        }
+        this.allFit = allFit
+    }
+
+    test(context, factors = null) {
+        for (const item of this.array) {
+
+            const result = this.testOne(item, context, factors);
+            if (this.allFit) {
+                if (!result) return false;
+            } else {
+                if (result) return true;
+            }
+        }
+        return this.allFit;
+    }
+
+    transformOneArg(arg, dependency = null) {
+        // To be overridden
+    }
+
+    prepareTest(factors = null) {
+        // To be overridden
+    }
+
+    testOne(item, context, factors = null) {
+        // To be overridden
+    }
+}
+
+class McVersionCondition extends ArrayArgCondition {
+
+    constructor(array, allFit, dependency) {
+        if (allFit) {
+            // 不能使用 allFIt 要抛错
+        }
+        super(array, allFit, dependency);
+    }
+
+    transformOneArg(arg, dependency = null) {
+        let versionRange;
+        try {
+            versionRange = VersionRange.fromString(arg);
+        } catch (e) {
+            throw new ConfigError(t('error.configs.invalidConditionArgs', '', 'string(VersionRange)', this.arg), '.');
+        }
+        return versionRange;
+    }
+
+    prepareTest(factors = null) {
+        if (factors && !factors.mcVersion) {
+            factors.mcVersion = new Map();
+        }
+    }
+
+    testOne(item, context, factors = null) {
+        const result = item.fit(context.mcVersion);
+
+        if (factors) {
+            const versionRangeString = item.toString();
+            if (!factors.mcVersion.has(versionRangeString)) {
+                factors.mcVersion.set(versionRangeString, result);
+            }
+        }
+
+        return result;
+    }
+}
+defaultConditionMap.set('mcVersion', McVersionCondition);
 
 class ModLoaderCondition extends Condition {
     constructor(obj) {
@@ -214,7 +310,7 @@ class ModLoaderCondition extends Condition {
         return this.arg.includes(context.modLoader);
     }
 }
-conditionMap.set('modLoader', ModLoaderCondition);
+defaultConditionMap.set('modLoader', ModLoaderCondition);
 
 class PackFormatCondition extends Condition {
     constructor(obj) {
@@ -239,7 +335,7 @@ class PackFormatCondition extends Condition {
         return this.arg.includes(context.packFormat);
     }
 }
-conditionMap.set('packFormat', PackFormatCondition);
+defaultConditionMap.set('packFormat', PackFormatCondition);
 
 class ReferenceCondition extends Condition {
     constructor(type, obj) {
@@ -297,7 +393,7 @@ class GroupCondition extends ReferenceCondition {
         return (context.groups?.includes(item));
     }
 }
-conditionMap.set('group', GroupCondition);
+defaultConditionMap.set('group', GroupCondition);
 
 class OptionCondition extends ReferenceCondition {
     constructor(obj) {
@@ -314,7 +410,7 @@ class OptionCondition extends ReferenceCondition {
         return (context.options?.includes(item));
     }
 }
-conditionMap.set('option', OptionCondition);
+defaultConditionMap.set('option', OptionCondition);
 
 class ResourceCondition extends ReferenceCondition {
     constructor(obj) {
@@ -332,5 +428,5 @@ class ResourceCondition extends ReferenceCondition {
         return (context.resources?.includes(item));
     }
 }
-conditionMap.set('resource', ResourceCondition);
+defaultConditionMap.set('resource', ResourceCondition);
 
