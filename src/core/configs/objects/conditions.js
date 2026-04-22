@@ -350,26 +350,36 @@ class OptionCondition extends ArrayArgCondition {
             throw new ConfigError(t('error.configs.conditionInvalidArgs', 'option', 'string(OptionPath)', arg), '.');
         }
 
-        const optionPath = {group: null, option: null};
+        let optionPath;
         if (arg.includes('.')) {
             const split = arg.split('.');
             if (split.length !== 2 || !stringUsable(split[0], StringType.ID) || !stringUsable(split[1], StringType.ID)) {
                 throw new ConfigError(t('error.configs.conditionInvalidArgs', 'option', 'string(OptionPath)', arg), '.');
             }
-            optionPath.group = split[0];
-            optionPath.option = split[1];
+            optionPath = [split[0], split[1]];
         } else {
             if (!stringUsable(arg, StringType.ID)) {
                 throw new ConfigError(t('error.configs.conditionInvalidArgs', 'option', 'string(OptionPath)', arg), '.');
             }
-            optionPath.group = arg;
+            optionPath = [arg];
         }
 
         if (dependencies) {
             if (!dependencies.groups) {
                 dependencies.groups = [];
             }
-            dependencies.groups.push(optionPath.group);
+            if (!dependencies.groups.includes(optionPath[0])) {
+                dependencies.groups.push(optionPath[0]);
+            }
+
+            if (optionPath.length === 2) {
+                if (!dependencies.options) {
+                    dependencies.options = [];
+                }
+                if (!dependencies.options.includes(optionPath)) {
+                    dependencies.options.push(optionPath);
+                }
+            }
         }
 
         return optionPath;
@@ -398,6 +408,16 @@ class ResourceCondition extends ArrayArgCondition {
             // resourcePath 可能以 inline: 开头，其余情况不应存在冒号
             throw new ConfigError(t('error.configs.conditionInvalidArgs', `resource`, 'string(ResourcePath)', arg), '.');
         }
+
+        if (dependencies) {
+            if (!dependencies.resources) {
+                dependencies.resources = [];
+            }
+            if (!dependencies.resources.includes(arg)) {
+                dependencies.resources.push(arg);
+            }
+        }
+
         return arg;
     }
 
