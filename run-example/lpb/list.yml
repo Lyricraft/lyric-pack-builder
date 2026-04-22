@@ -9,15 +9,13 @@ groups:
     options:
       - id: sodium
         # 从 MC 版本 1.21.1 开始，钠支持了 Neoforge
-        conditions:
-          - mcVersion: "[1.21.1,)"
+        condition: mcVersion "[1.21.1,)"
         resources:
           # 钠
           - mods/sodium
       - id: embeddium
         # 在钠尚未支持 Neoforge 前，使用其非官方移植 Embeddium
-        conditions:
-          - mcVersion: "[1.20.1,1.21]"
+        condition: mcVersion "[1.20.1,1.21]"
         resources:
           - mods/embeddium
 
@@ -33,8 +31,7 @@ groups:
     # 钠·扩展
     options:
       - id: sodiumExtra
-        conditions:
-          - option: basicRendering.sodium
+        condition: option basicRendering.sodium
         resources:
           - mods/sodiumExtra
 
@@ -43,8 +40,7 @@ groups:
     options:
       - id: reesesSodiumOptions
         # Reese 的钠视频界面
-        conditions:
-          - option: basicRendering.sodium
+        condition: option basicRendering.sodium
         resources:
           - mods/reesesSodiumOptions
 
@@ -70,8 +66,7 @@ groups:
     options:
       - id: moreCulling
         # 从 MC 版本 1.21 开始支持 Neoforge
-        conditions:
-          - mcVersion: "[1.21,)"
+        condition: mcVersion "[1.21,)"
         resources:
           - mods/moreCulling
 
@@ -80,8 +75,7 @@ groups:
     options:
       - id: asyncParticles
         # 支持区间 1.21 ~ 1.21.10，似已停更
-        conditions:
-          - mcVersion: "[1.21,1.21.10]"
+        condition: mcVersion "[1.21,1.21.10]"
         resources:
           - mods/asyncParticles
 
@@ -100,8 +94,7 @@ groups:
     options:
       - id: sodiumShadowyPathBlocks
         # 以钠为前置，在没有钠时舍弃
-        conditions:
-          - option: basicRendering.sodium
+        condition: option basicRendering.sodium
         resources:
           # 钠·土径阴影
           - mods/sodiumShadowyPathBlocks
@@ -111,10 +104,7 @@ groups:
     options:
       - id: lambDynamicLights
         # 支持区间有限，其余版本暂无合适替代方案
-        conditions:
-          - mcVersion:
-            - "[1.21,1.21.1]"
-            - "[1.21.5,)"
+        condition: mcVersion["[1.21,1.21.1]", "[1.21.5,)"]
         resources:
           - mods/lambDynamicLights
 
@@ -123,8 +113,7 @@ groups:
     options:
       - id: modelGapFix
         # MC 在 1.21.11 版本修复了此 Bug，以后不再需要
-        conditions:
-          - mcVersion: "[1.20.1,1.21.10]"
+        condition: mcVersion "[1.20.1,1.21.10]"
         resources:
           - mods/modelGapFix
 
@@ -136,8 +125,7 @@ groups:
     options:
       - id: lithium
         # 从 MC 版本 1.21.1 开始支持 Neoforge
-        conditions:
-          - mcVersion: "[1.21.1,)"
+        condition: mcVersion "[1.21.1,)"
         resources:
           - mods/lithium
 
@@ -154,8 +142,7 @@ groups:
     options:
       - id: c2me
         # 从 MC 版本 1.21.1 开始支持 Neoforge
-        conditions:
-          - mcVersion: "[1.21.1,)"
+        condition: mcVersion "[1.21.1,)"
         resources:
           - mods/c2me
 
@@ -164,16 +151,12 @@ groups:
     options:
       - id: kryptonFnp
         # 非官方 Forge 移植，需注意要改配置
-        conditions:
-          - mcVersion:
-            - "[1.20.6,)"
-            - "1.20.1"
+        condition: mcVersion["[1.20.6,)", "1.20.1"]
         resources:
           - mods/kryptonFnp
       - id: kryptonFoxified
         # 早期 Neoforge 移植，已较长时间未更新
-        conditions:
-          - mcVersion: "[1.20.2,1.20.5]"
+        condition: mcVersion "[1.20.2,1.20.5]"
         resources:
             - mods/kryptonFoxified
 
@@ -185,8 +168,7 @@ groups:
     options:
       - id: neoContinuity
         # Continuity 的 Neoforge 移植版，能不依赖信雅互联原生运行。可惜目前只支持 1.21 和 1.21.1，且其他版本暂未找到无需信雅互联且可用易用的方案。
-        conditions:
-          - mcVersion: "[1.21,1.21.1]"
+        condition: mcVersion "[1.21,1.21.1]"
         resources:
           - mods/neoContinuity
 
@@ -205,8 +187,7 @@ groups:
     options:
       - id: puzzle
         # 从 MC 版本 1.21 开始支持 Neoforge
-        conditions:
-          - mcVersion: "[1.21,)"
+        condition: mcVersion "[1.21,)"
         resources:
           - mods/puzzle
 
@@ -228,14 +209,12 @@ groups:
     options:
       - id: paginatedAdvancements
         # 从 MC 版本 1.21.6 开始支持 Neoforge
-        conditions:
-          - mcVersion: "[1.21.6,)"
+        condition: mcVersion "[1.21.6,)"
         resources:
           - mods/paginatedAdvancements
       - id: forgedPaginatedAdvancements
         # 非官方 Neoforge 移植
-        conditions:
-          - mcVersion: "[1.20.1,1.21.5]"
+        condition: mcVersion "[1.20.1,1.21.5]"
         resources:
           - mods/forgedPaginatedAdvancements
 
@@ -244,11 +223,7 @@ groups:
     options:
       - id: leaveMyBarsAlone
         # 改进的骑乘 HUD
-        conditions:
-          - mcVersion:
-            - "[1.21.1,)"
-            - "1.20.4"
-            - "1.20.1"
+        condition: mcVersion["[1.21.1,)", "1.20.4", "1.20.1"]
         resources:
           - mods/leaveMyBarsAlone
 
@@ -260,15 +235,12 @@ groups:
     options:
       - id: cubesWithoutBorders
         # 从 MC 版本 1.20.5 开始支持 Neoforge。注意使用时要更改配置，以及包含本地化资源包。
-        conditions:
-          - mcVersion: "[1.20.5,)"
+        condition: mcVersion "[1.20.5,)"
         resources:
           - mods/cubesWithoutBorders
       - id: concentration
         # 专注。在 Cubes Without Borders 尚未支持 Neoforge 前用以替代，但在此区间内也只支持 1.20.1.
-        conditions:
-          - mcVersion: "1.20.1"
-          - packFormat: "modrinth"
+        condition: and(mcVersion "1.20.1", packFormat "modrinth")
         resources:
           - mods/concentration
 
@@ -277,14 +249,12 @@ groups:
     options:
       - id: okZoomer
         # 从 MC 版本 1.21 开始支持 Neoforge。
-        conditions:
-          - mcVersion: "[1.21,)"
+        condition: mcVersion "[1.21,)"
         resources:
           - mods/okZoomer
       - id: vanillaZoom
         # 原版缩放：按键自动在副手使用望远镜。在 OK Zoomer 尚未支持 Neoforge 前的替代方案。注意更改热键。
-        conditions:
-          - mcVersion: "[1.20.1,1.21)"
+        condition: mcVersion "[1.20.1,1.21)"
         resources:
           - mods/vanillaZoom
 
@@ -301,28 +271,21 @@ groups:
   - id: clothConfigApi
     options:
       - id: clothConfigApi
-        conditions:
-          - resource:
-            - mods/moreCulling
-            - mods/forgedPaginatedAdvancements
+        condition: resource[mods/moreCulling, mods/forgedPaginatedAdvancements]
         resources:
           - mods/clothConfigApi
 
   - id: midnightLib
     options:
       - id: midnightLib
-        conditions:
-          - resource:
-            - mods/puzzle
+        condition: resource mods/puzzle
         resources:
           - mods/midnightLib
 
   - id: puzzlesLib
     options:
       - id: puzzlesLib
-        conditions:
-          - resource:
-            - mods/leaveMyBarsAlone
+        condition: resource mods/leaveMyBarsAlone
         resources:
           - mods/puzzlesLib
 
@@ -340,8 +303,7 @@ groups:
     # 钠的本地化资源包
     options:
       - id: translationsForSodium
-        conditions:
-          - option: basicRendering.sodium
+        condition: option basicRendering.sodium
         resources:
           - resourcepacks/translationsForSodium
 
@@ -358,8 +320,7 @@ groups:
     # Cubes Without Borders 的本地化资源包
     options:
       - id: translationsForCwb
-        conditions:
-          - option: borderlessFullscreen.cubesWithoutBorders
+        condition: option borderlessFullscreen.cubesWithoutBorders
         resources:
           - packs/translationsForCwb
 
