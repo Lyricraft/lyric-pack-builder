@@ -365,7 +365,10 @@ class OptionCondition extends ArrayArgCondition {
             optionPath.group = arg;
         }
 
-        if (dependencies?.groups) {
+        if (dependencies) {
+            if (!dependencies.groups) {
+                dependencies.groups = [];
+            }
             dependencies.groups.push(optionPath.group);
         }
 

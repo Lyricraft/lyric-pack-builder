@@ -78,10 +78,7 @@ export class StringExpressionParser {
 
         while (true) {
             const char = this.nextChar();
-            if (!stringUsable(char)) {
-                break;
-            }
-            if (!keywordCharRegex.test(char)) {
+            if (!stringUsable(char) || !keywordCharRegex.test(char)) {
                 this.back();
                 break;
             }

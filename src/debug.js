@@ -57,6 +57,9 @@ let condition;
 for (const test of tests) {
     dependencies = {};
     condition = Condition.fromString(test, DEFAULT_CONDITION_MAP, dependencies);
-    console.log(dependencies);
-    console.log(condition);
+    console.log(test);
+    console.log(JSON.stringify(condition));
+    console.log(JSON.stringify(dependencies));
 }
+
+console.log("All tests passed!");
