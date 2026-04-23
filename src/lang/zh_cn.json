@@ -76,5 +76,8 @@
     "error.configs.resourceLocationLacksDir": "资源应用位置缺少资源目录",
     "error.configs.resourceLocationLacksFileName": "资源应用位置缺少文件名",
 
+    "error.configs.platformResourceReferenceTypeNotMatch": "平台资源引用的类型不匹配：$ 是 $ 类型，但应用在 $ 类型处",
+    "error.configs.platformResourceReferenceContentNotMatch": "平台资源引用的项目不匹配：$ 依附于 $ 为 $ 的项目，但应用在 $ 处",
+
     "error.build.noConditionHit": "选择 $ 时，没有任何一个选项的条件满足"
 }

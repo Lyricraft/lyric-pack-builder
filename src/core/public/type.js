@@ -81,6 +81,19 @@ export function checkEnum(enumObj, value) {
     return false;
 }
 
+export function getStrictType(obj) {
+    if (obj === null) return 'Null';
+    if (obj === undefined) return 'Undefined';
+    // 基础类型返回标签，对象返回构造函数
+    return typeof obj !== 'object'
+        ? Object.prototype.toString.call(obj)
+        : obj.constructor;
+}
+
+export function isStrictSameType(a, b) {
+    return getStrictType(a) === getStrictType(b);
+}
+
 export function isNullOrUndefined(obj) {
     return obj === null || obj === undefined;
 }
