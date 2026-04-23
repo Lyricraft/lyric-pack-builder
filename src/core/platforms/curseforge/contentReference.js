@@ -19,12 +19,28 @@ class CurseforgeIdContentReference extends ContentReference {
         super(type);
         this.id = id; // 使用 string 存储
     }
+
+    symbolType() {
+        return 'id';
+    }
+
+    symbol() {
+        return this.id;
+    }
 }
 
 class CurseforgeSlugContentReference extends ContentReference {
     constructor(slug, type) {
         super(type); // type 不可为空字符串！
         this.slug = slug;
+    }
+
+    symbolType() {
+        return 'slug';
+    }
+
+    symbol() {
+        return this.slug;
     }
 }
 

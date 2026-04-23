@@ -18,7 +18,7 @@ export class ContentReference {
     // 返回值：true 代表匹配或跳过，false 代表不匹配。
     checkMatch(compare) {
         // 如果不是同一类型，没法判断，直接返回。
-        if (!isStrictSameType(this, compare)) {
+        if (this.symbolType() !== compare.symbolType()) {
             return true;
         }
         return this.symbol() === compare.symbol();
