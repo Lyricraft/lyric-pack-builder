@@ -304,8 +304,8 @@ class ModLoaderCondition extends ArrayArgCondition {
     }
 
     prepareTest(context, factors = null) {
-        if (factors && !factors.mcVersion) {
-            factors.mcVersion = context.mcVersion;
+        if (factors && !factors.modLoader) {
+            factors.modLoader = context.modLoader;
         }
     }
 
@@ -386,13 +386,14 @@ class OptionCondition extends ArrayArgCondition {
     }
 
     testOne(item, context, factors = null) {
-        // context.options 中存的是 OptionPath 对象，且 group 的值唯一
-        for (const optionPath of context.options) {
-            if (optionPath.group === item.group) {
-                if (!stringUsable(item.option)) {
-                    return true;
+        // context.options 中存数组，0 是 group，1 是 option，两位都是肯定有的！
+        for(const option of context.options) {
+            if (option[0] === item[0]) {
+                if (item.length > 1) {
+                    // 这里还要求 option 也一样
+                    return item[1] === option[1];
                 } else {
-                    return optionPath.option === item.option;
+                    return true;
                 }
             }
         }
