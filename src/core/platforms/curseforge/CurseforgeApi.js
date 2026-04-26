@@ -178,7 +178,7 @@ export class CurseforgeApi {
         }
 
         if (versionStage) {
-            if (!versionStage instanceof VersionStage || versionStage.toString() === VersionStageName.UNKNOWN) {
+            if (!(versionStage instanceof VersionStage) || versionStage.toString() === VersionStageName.UNKNOWN) {
                 throw new Error(t('error.platformApi.invalidArgsInfo', PubPlatform.CURSEFORGE, 'versionStage', 'VersionStage (except Unknown)', versionStage));
             }
             requestUrl.searchParams.set('releaseType', curseforgeReleaseTypeBiMap.get(versionStage.toString()).toString());

@@ -129,6 +129,9 @@ export class HttpRequester {
                     }
 
                     mergedConfig.errorHandler(e, rq);
+                } else {
+                    // 逆天，我居然忘了写这个！
+                    throw e;
                 }
 
                 if (tryTimes > mergedConfig.autoRetryTimes + 1) {

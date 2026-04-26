@@ -1,5 +1,5 @@
 import path from 'path';
-import {parseFileYaml} from "./configs/parser.js";
+import {parseFileConfig} from "./configs/parser.js";
 import {ModrinthApi} from "./platforms/modrinth/ModrinthApi.js";
 import {HttpRequester} from "./network/HttpRequester.js";
 import {CurseforgeApi} from "./platforms/curseforge/CurseforgeApi.js";
@@ -76,7 +76,7 @@ export class LpbApp{
     async load(models){
         // builder
         if (models.builder) {
-            this.builderConfig = await parseFileYaml(models.builder.builderConfigPath);
+            this.builderConfig = await parseFileConfig(models.builder.builderConfigPath);
         }
 
         // bootstrap

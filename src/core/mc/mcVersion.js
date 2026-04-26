@@ -1,6 +1,6 @@
 import {Version, VERSION_PATTERN} from "../objects/versions.js";
 import {padZero} from "../public/string.js";
-import {stringUsable} from "../public/type.js";
+import {isNullOrUndefined, stringUsable} from "../public/type.js";
 import {ArgsError} from "../public/errors.js";
 import {t} from "../i18n/translate.js";
 
@@ -72,10 +72,10 @@ export class McVersion {
                     }
                 }
                 if (/^\d+$/.test(segment)) {
-                    subNum = segment;
+                    subNum = parseInt(segment);
                 }
             }
-            if (!version || !subNum) {
+            if (!version || !isNullOrUndefined(subNum)) {
                 throw new Error(t('error.type.invalidMcVersion', str));
             }
             return new SubNumMcVersion(version, stage, subNum);

@@ -57,12 +57,17 @@ export function deepMerge(template, active) {
         return template;
     }
 
+    return deepMergeLoop(deepClone(template), active);
+}
+
+function deepMergeLoop(template, active) {
+
     for (const key of Object.keys(active)) {
         const activeValue = active[key];
         const templateValue = template[key];
 
         if (isPlainObject(activeValue) && isPlainObject(templateValue)) {
-            deepMerge(templateValue, activeValue);
+            deepMergeLoop(templateValue, activeValue);
             continue;
         }
 
