@@ -1,7 +1,7 @@
-import {ContentReference} from "../objects/contentReference.js";
-import {stringUsable} from "../../public/type.js";
-import {ArgTypeError} from "../../public/errors.js";
-import {curseforgeContentGateway} from "./curseforgeId.js";
+import {ContentReference} from "./contentReference.js";
+import {stringUsable} from "../../../../../public/type.js";
+import {ArgTypeError} from "../../../../../public/errors.js";
+import {curseforgeContentGateway} from "../../../../../platforms/curseforge/curseforgeId.js";
 
 const contentReferenceMap = new Map();
 

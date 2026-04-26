@@ -1,4 +1,4 @@
-import {isStrictSameType} from "../../public/type.js";
+import {isStrictSameType} from "../../../../../public/type.js";
 
 export class ContentReference {
     constructor(type) {

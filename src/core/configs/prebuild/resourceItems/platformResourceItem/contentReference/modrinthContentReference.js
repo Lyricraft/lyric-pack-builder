@@ -1,7 +1,7 @@
-import {ContentReference} from "../objects/contentReference.js";
-import {stringUsable} from "../../public/type.js";
-import {ConfigError} from "../../configs/errors.js";
-import {t} from "../../i18n/translate.js";
+import {ContentReference} from "./contentReference.js";
+import {stringUsable} from "../../../../../public/type.js";
+import {ConfigError} from "../../../../errors.js";
+import {t} from "../../../../../i18n/translate.js";
 
 const contentReferenceMap = new Map();
 

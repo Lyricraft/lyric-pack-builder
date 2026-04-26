@@ -1,11 +1,11 @@
-import {VersionReference} from "../objects/versionReference.js";
+import {VersionReference} from "./versionReference.js";
 import {
     MODRINTH_CONTENT_URL_REGEX,
     modrinthContentReference,
     modrinthProjectUrlToReference
-} from "./contentReference.js";
-import {ConfigError} from "../../configs/errors.js";
-import {t} from "../../i18n/translate.js";
+} from "../contentReference/modrinthContentReference.js";
+import {ConfigError} from "../../../../errors.js";
+import {t} from "../../../../../i18n/translate.js";
 
 const versionReferenceMap = new Map();
 
