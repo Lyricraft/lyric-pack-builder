@@ -115,7 +115,7 @@ export class ResourceOption {
         }
 
         let conDependencies = {} ;
-        let condition = parseInnerObj(obj.conditions, 'Option', 'condition',
+        let condition = parseInnerObj(obj.condition, 'Option', 'condition',
             (str) => Condition.fromString(str, DEFAULT_CONDITION_MAP, conDependencies), null);
         if (!condition) {
             condition = Condition.always();
