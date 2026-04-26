@@ -1,5 +1,9 @@
 import {VersionReference} from "../objects/versionReference.js";
-import {MODRINTH_CONTENT_URL_REGEX, modrinthProjectUrlToReference} from "./contentReference.js";
+import {
+    MODRINTH_CONTENT_URL_REGEX,
+    modrinthContentReference,
+    modrinthProjectUrlToReference
+} from "./contentReference.js";
 import {ConfigError} from "../../configs/errors.js";
 import {t} from "../../i18n/translate.js";
 
@@ -28,6 +32,15 @@ class ModrinthVersionNumberVersionReference extends VersionReference {
     }
 }
 
+class ModrinthDownloadUrlVersionReference extends VersionReference {
+    constructor(downloadUrl, contentReference = null) {
+        super(contentReference);
+        this.downloadUrl = downloadUrl;
+    }
+}
+
+export const MODRINTH_DOWNLOAD_URL_REGEX = /cdn\.modrinth\.com\/data\/([^/]+)\/versions\/([^/]+)\/([^/]+)$/;
+
 versionReferenceMap
     .set(/[A-Za-z0-9]{8}/, ModrinthIdVersionReference)
     .set(/^[a-zA-Z0-9!@$()`.+,_"\-']{1,32}$/, ModrinthIdVersionReference)
@@ -40,10 +53,26 @@ versionReferenceMap
         const versionSymbol = match[1];
 
         const urlContentReference = modrinthProjectUrlToReference(url);
-        if (contentReference && urlContentReference.checkMatch(contentReference)) {
+        if (contentReference && !urlContentReference.checkMatch(contentReference)) {
             throw new ConfigError(t('error.configs.platformResourceReferenceContentNotMatch',
                 url, urlContentReference.symbolType(), urlContentReference.symbol(), contentReference.symbol()));
         }
-        return modrinthVersionReference(versionSymbol, urlContentReference);
+        return modrinthVersionReference(versionSymbol, contentReference??urlContentReference);
+    })
+    .set(MODRINTH_DOWNLOAD_URL_REGEX, function (url, contentReference = null) {
+        const projectIdLike = url.match(MODRINTH_DOWNLOAD_URL_REGEX)[1];
+
+        let urlContentReference;
+        try {
+            urlContentReference = modrinthContentReference(projectIdLike);
+        } catch(e) {
+            urlContentReference = null;
+        }
+
+        if (contentReference && urlContentReference && !urlContentReference.checkMatch(contentReference)) {
+            throw new ConfigError(t('error.configs.platformResourceReferenceContentNotMatch',
+                url, urlContentReference.symbolType(), urlContentReference.symbol(), contentReference.symbol()));
+        }
+
+        return new ModrinthDownloadUrlVersionReference(url, contentReference??urlContentReference);
     });
-// TODO: 添加对文件直链的支持
