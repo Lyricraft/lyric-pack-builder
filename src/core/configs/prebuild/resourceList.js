@@ -161,7 +161,7 @@ export class ResourceGroup {
             } else {
                 const randomId = getRandomIntId();
                 id = `group_${randomId}`
-                optionId = `option_${randomId}`;
+                optionId = 'option0';
             }
 
             const option = deepClone(obj);
