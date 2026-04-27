@@ -3,6 +3,7 @@ import {ConfigFieldError} from "../errors.js";
 import {t} from "../../i18n/translate.js";
 import {stringUsable} from "../../public/type.js";
 import {Condition} from "./conditions.js";
+import {parseInnerObj} from "../parser.js";
 
 export const AutoVersionSelection = {
     LATEST: 'latest',
@@ -15,21 +16,21 @@ export const AutoVersionSelection = {
 export const DEFAULT_AUTO_VERSION_SELECTION = AutoVersionSelection.LATEST;
 
 export class VersionSelection {
-    constructor(version, selection) {
-        this.version = version;
+    constructor(versions, selection) {
+        this.versions = versions;
         this.selection = selection;
     }
 
-    static fromObj(obj, defaultSelection = DEFAULT_AUTO_VERSION_SELECTION) {
+    static fromObj(obj, versionParserFunc = (str) => str, defaultSelection = DEFAULT_AUTO_VERSION_SELECTION) {
         const selection = checkConfigEnum(obj.selection, "VersionSelection", 'selection', 'string(AutoVersionSelection)', AutoVersionSelection, defaultSelection);
 
         if (obj.selection === AutoVersionSelection.STATIC && !obj.version) {
             throw new ConfigFieldError("VersionSelection", 'version', t('error.configs.selectionMissingWithStaticSelection'));
         }
 
-        let version;
+        let versions;
         if (obj.version) {
-            version = {};
+            versions = [];
             for (const key in obj.version) {
                 checkConfigStringType(key, "VersionSelection", 'version#key');
 
@@ -44,10 +45,13 @@ export class VersionSelection {
                     throw new ConfigFieldError("VersionSelection", 'version#value', t('error.configs.invalidVersionConditionMsg', e.message));
                 }
 
-                version[key] = condition;
+                versions.push({
+                    version: parseInnerObj(key, 'VersionSelection', 'version#key', versionParserFunc),
+                    condition,
+                })
             }
         }
 
-        return new VersionSelection(version, selection);
+        return new VersionSelection(versions, selection);
     }
 }
