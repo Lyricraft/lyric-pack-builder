@@ -99,14 +99,13 @@ ResourceLike.fromField = function(field) {
 }
 
 export class ResourceOption {
-    constructor(id, condition, resources, conDependencies = {}) {
+    constructor(id, condition, resources) {
         this.id = id;
         this.condition = condition;
         this.resources = resources; // Resource[]
-        this.conDependencies = conDependencies;
     }
 
-    static fromObj(obj){
+    static fromObj(obj, requireConD = false){
         let id;
         if (obj.id) {
             id = checkConfigStringChars(obj.id, 'Option', 'id', StringType.FILE_NAME);
@@ -114,12 +113,15 @@ export class ResourceOption {
             id = `option_${getRandomIntId()}`;
         }
 
-        let conDependencies = {} ;
+        let conDependencies = requireConD ? {} : null; // 避免创建不使用的对象（不知道有没有用）
         let condition = parseInnerObj(obj.condition, 'Option', 'condition',
-            (str) => Condition.fromString(str, DEFAULT_CONDITION_MAP, conDependencies), null);
+            (str) => Condition.fromString(str, DEFAULT_CONDITION_MAP,
+                requireConD ? conDependencies : undefined), null);
         if (!condition) {
             condition = Condition.always();
-            conDependencies = {};
+            if (requireConD) {
+                conDependencies = {};
+            }
         }
 
         checkConfigArray(obj.resources, 'Option', 'resources', undefined, 'string(ResourceConfigPath) / object(InlineResourceObj) []', null, false); // 不为空、不可选
@@ -128,38 +130,23 @@ export class ResourceOption {
             resources.push(parseInnerObj(resourceObj, 'Option', 'resources', (field) => ResourceLike.fromField(field)));
         }
 
-        return new ResourceOption(id, condition, resources, conDependencies);
+        const resourceOption = new ResourceOption(id, condition, resources, conDependencies);
+        if (requireConD) {
+            resourceOption.conDependencies = conDependencies;
+        }
+        return resourceOption;
     }
 }
 
 export class ResourceGroup {
     constructor(id, options, required) {
         this.id = id;
-        this.options = options; // Map<ResourceOption>
+        this.options = options; // Array<ResourceOption>
         this.required = required;
-
-        // 将所有 options 的条件依赖合并到此处的条件依赖
-        this.conDependencies = {};
-        for (const option of this.options.values()) {
-            if (!option.conDependencies) {
-                continue;
-            }
-            for (const [key, value] of Object.entries(option.conDependencies)) {
-                if (!this.conDependencies[key]) {
-                    this.conDependencies[key] = deepClone(value);
-                } else {
-                    if (Array.isArray(value)) {
-                        this.conDependencies[key] = [...new Set([...this.conDependencies[key], ...value])];
-                    } else {
-                        this.conDependencies[key] = deepMerge(this.conDependencies[key], value);
-                    }
-                }
-            }
-        }
     }
 
-    static fromObj (obj){
-        let options = new Map();
+    static fromObj (obj, requireMapAndConD = false){
+        let optionsMap = new Map();
         let id;
 
         // 简写形式：直接填 resources，不填 groups
@@ -179,8 +166,8 @@ export class ResourceGroup {
 
             const option = deepClone(obj);
             option.id = optionId;
-            options.set(optionId, parseInnerObj(option, 'Group', `options[id=${optionId}]`,
-                (optionObj) => ResourceOption.fromObj(optionObj)));
+            optionsMap.set(optionId, parseInnerObj(option, 'Group', `options[id=${optionId}]`,
+                (optionObj) => ResourceOption.fromObj(optionObj, requireMapAndConD)));
         } else {
             if (obj.id) {
                 id = checkConfigStringChars(obj.id, 'Option', 'id', StringType.FILE_NAME);
@@ -190,22 +177,48 @@ export class ResourceGroup {
         }
 
         // 如果不等于零，说明是简写的，已经处理好 option 了，这里直接跳过。
-        if (options.size === 0) {
+        if (optionsMap.size === 0) {
             checkConfigArray(obj.options, 'Group', 'options', undefined, 'object(ResourceOption)', null, false); // 检查保证不为空
             for (const optionObj of obj.options) {
                 const option = parseInnerObj(optionObj, 'Group', `options[id=${optionObj?.id??'?'}]`,
-                    (optionObj) => ResourceOption.fromObj(optionObj));
+                    (optionObj) => ResourceOption.fromObj(optionObj, requireMapAndConD));
                 // 防止重复 id
-                if (options.has(option.id)) {
+                if (optionsMap.has(option.id)) {
                     throw new ConfigError(t('error.configs.duplicateId', 'Option', option.id), `options[id=${option.id}]`);
                 }
-                options.set(option.id, option);
+                optionsMap.set(option.id, option);
             }
         }
 
         let required = checkConfigField(obj.required, 'Option', 'required', 'bool', (bool) => typeof bool === 'boolean', true);
 
-        return new ResourceGroup(id, options, required);
+        const resourceGroup = new ResourceGroup(id, Array.from(optionsMap.values()), required);
+
+        if (requireMapAndConD) {
+            resourceGroup.map = optionsMap;
+
+            // 将所有 options 的条件依赖合并到此处的条件依赖
+            const conDependencies = {};
+            for (const option of resourceGroup.options) {
+                if (!option.conDependencies) {
+                    continue;
+                }
+                for (const [key, value] of Object.entries(option.conDependencies)) {
+                    if (!conDependencies[key]) {
+                        conDependencies[key] = deepClone(value);
+                    } else {
+                        if (Array.isArray(value)) {
+                            conDependencies[key] = [...new Set([...conDependencies[key], ...value])];
+                        } else {
+                            conDependencies[key] = deepMerge(conDependencies[key], value);
+                        }
+                    }
+                }
+            }
+            resourceGroup.conDependencies = conDependencies;
+        }
+
+        return resourceGroup;
     }
 }
 
@@ -228,11 +241,7 @@ class OptionPath{
 
 export class ResourceList {
     constructor(groups) {
-        this.groups = groups; // Map<string, Group>
-    }
-
-    groupArray() {
-        return this.groups.values();
+        this.groups = groups; // Array<Group>
     }
 
     static fromArray(array) {
@@ -248,19 +257,19 @@ export class ResourceList {
             if (typeof groupObj === 'string') {
                 checkConfigStringType(groupObj, 'ResourceList', 'groups[id=?]', undefined,
                     'string(ResourceId)', StringType.FILE_PATH);
-                group = ResourceGroup.fromObj({resources: [groupObj]});
+                group = ResourceGroup.fromObj({resources: [groupObj]}, true);
             } else {
                 // 其余情况都必须是对象
                 checkConfigField(groupObj, 'ResourceList', 'groups[id=?]', 'object(Group)',
                     (arg) => isPlainObject(arg));
                 // 是不是直接写的内联 resource？（使用是否含有 type 判别）
                 if (Object.hasOwn(groupObj, 'type')) {
-                    group = ResourceGroup.fromObj({resources: [groupObj]});
+                    group = ResourceGroup.fromObj({resources: [groupObj]}, true);
                 } else {
                     // 最后还有两种情况，一种是完整形式，一种是将 resource 和 option 简写成一层，
                     // 都可以直接交给 ResourceGroup.fromObj 来处理。
                     group = parseInnerObj(groupObj, 'ResourceList', `groups[id=${groupObj?.id??'?'}]`,
-                        (arg) => ResourceGroup.fromObj(arg));
+                        (arg) => ResourceGroup.fromObj(arg, true));
                 }
             }
             // 防止重复 id
@@ -275,7 +284,7 @@ export class ResourceList {
         const resourceLikeMap = new Map(); // resourceId -> groupId[]
         for (const groupId of unsortedGroupMap.keys()) {
             const group = unsortedGroupMap.get(groupId);
-            for (const option of group.options.values()) { // group.options 是 Map
+            for (const option of group.options) { // group.options 是 Array
                 for (const resourceLike of option.resources) { // option.resources 是 Array
                     if (!resourceLikeMap.has(resourceLike.id)) {
                         // 没有就创建个成员
@@ -295,14 +304,21 @@ export class ResourceList {
             moveGroupToSortingList(key, 0, groupArray, unsortedGroupMap, resourceLikeMap, []); // 加到第一个（物理）
         }
 
-        // 倒序放入新 Map
-        const groupMap = new Map();
+        // 倒序放入新 Array，并剥除 map 和 conD
+        const rGroupArray = [];
         for (let i = groupArray.length - 1; i >= 0; i--) {
-            groupMap.set(groupArray[i].id, groupArray[i]);
+            const group = groupArray[i];
+            delete group.map;
+            delete group.conDependencies;
+            // 剥除 option 的 conDependencies
+            for (const option of group.options) {
+                delete option.conDependencies;
+            }
+            rGroupArray.push(group);
         }
 
         // 大功告成
-        return new ResourceList(groupMap);
+        return new ResourceList(rGroupArray);
     }
 }
 
@@ -361,7 +377,7 @@ function moveGroupToSortingList(key, index, groupArray, unsortedGroupMap, resour
             const dependencyIndex = groupArray.findIndex(item => item.id === optionDependencyPath[0]);
             if (dependencyIndex > -1) {
                 // 找到，判断其是否存在
-                if (!groupArray[dependencyIndex].options.has(optionDependencyPath[1])) { // 注意 options 是 Map
+                if (!groupArray[dependencyIndex].map.has(optionDependencyPath[1])) { // 注意 options 是 Array，map 才是 Map
                     // 不存在，抛出错误
                     throw new ConfigError(t('error.configs.conditionDependencyNotFound', group.id, 'Option', optionDependencyPath.join('.')), `groups[${group.id}].options[*].conditions`);
                 }
