@@ -30,9 +30,8 @@ class FilesResourceItemFileItem {
         this.resourceLocation = parseInnerObj(obj, 'File', "",
             rl => ResourceLocation.fromObj(rl, folderMap, defaultResourceLocation));
 
-        checkConfigArray(obj.conditions, 'File', 'conditions', null)
-        this.conditions = parseInnerObj(obj.conditions, 'File', 'conditions',
-            Condition.fromArray, Condition.always());
+        this.condition = parseInnerObj(obj.condition, 'File', 'conditions',
+            Condition.fromString, Condition.always());
     }
 }
 

@@ -10,11 +10,8 @@ export class ResourceItem{
     constructor(obj) {
         this.type = obj.type;
 
-        this.condition = parseInnerObj(obj.conditions, 'ResourceItem', 'conditions',
-            (array) => Condition.fromArray(array), true);
-        if (!this.condition) {
-            this.condition = Condition.always();
-        }
+        this.condition = parseInnerObj(obj.condition, 'ResourceItem', 'conditions',
+            (exp) => Condition.fromString(exp), Condition.always());
 
         this.side = checkConfigEnum(obj.side, 'ResourceItem', 'side', 'string(ModSideOption)',
             ModSideOption, ModSideOption.AUTO);
