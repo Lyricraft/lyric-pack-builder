@@ -23,6 +23,10 @@ class ModrinthIdVersionReference extends VersionReference {
         super(contentReference);
         this.id = id;
     }
+
+    requireContentReference() {
+        return true;
+    }
 }
 
 class ModrinthVersionNumberVersionReference extends VersionReference {
@@ -30,12 +34,20 @@ class ModrinthVersionNumberVersionReference extends VersionReference {
         super(contentReference);
         this.versionNumber = versionNumber;
     }
+
+    requireContentReference() {
+        return true;
+    }
 }
 
 class ModrinthDownloadUrlVersionReference extends VersionReference {
     constructor(downloadUrl, contentReference = null) {
         super(contentReference);
         this.downloadUrl = downloadUrl;
+    }
+
+    requireContentReference() {
+        return false;
     }
 }
 

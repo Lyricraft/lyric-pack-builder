@@ -22,6 +22,21 @@ class CurseforgeIdVersionReference extends VersionReference {
         super(contentReference);
         this.id = id;
     }
+
+    requireContentReference() {
+        return true;
+    }
+}
+
+class CurseforgeDownloadUrlReference extends VersionReference {
+    constructor(downloadUrl, contentReference = null) {
+        super(contentReference);
+        this.downloadUrl = downloadUrl;
+    }
+
+    requireContentReference() {
+        return false;
+    }
 }
 
 export const CURSEFORGE_DOWNLOAD_URL_REGEX = /media\.forgecdn\.net\/files\/(\d{3})(\d+)\/([^/]+)$/;
@@ -44,7 +59,7 @@ versionReferenceMap
         return new CurseforgeIdVersionReference(fileId, contentReference??urlContentReference);
     })
     .set(CURSEFORGE_DOWNLOAD_URL_REGEX, function (url, contentReference = null) {
-        const match = url.match(CURSEFORGE_DOWNLOAD_URL_REGEX)
-        const id = match[1] + match[2];
-        return new CurseforgeIdVersionReference(id, contentReference);
+        // const match = url.match(CURSEFORGE_DOWNLOAD_URL_REGEX)
+        // const id = match[1] + match[2];
+        return new CurseforgeIdVersionReference(url, contentReference);
     });
