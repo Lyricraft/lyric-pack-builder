@@ -3,6 +3,7 @@ import {parseFileConfig} from "./configs/parser.js";
 import {ModrinthApi} from "./platforms/modrinth/ModrinthApi.js";
 import {HttpRequester} from "./network/HttpRequester.js";
 import {CurseforgeApi} from "./platforms/curseforge/CurseforgeApi.js";
+import {PrebuildManager} from "./managers/PrebuildManager.js";
 
 const lpbVersion = '0.2.0'
 
@@ -92,6 +93,8 @@ export class LpbApp{
             this.datagenDir = models.prebuild.datagenDir ?? this.datagenDir;
             this.localFileRoot = models.prebuild.localFileRoot ?? this.localFileRoot;
             this.ncpDir = models.prebuild.ncpDir ?? this.ncpDir;
+
+            this.prebuildManager = new PrebuildManager();
         }
 
         // platforms
