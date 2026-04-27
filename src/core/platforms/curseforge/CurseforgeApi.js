@@ -119,7 +119,7 @@ export class CurseforgeApi {
         try {
             modInfo = new ModInfo({
                 platform: PubPlatform.CURSEFORGE,
-                type: curseforgeClassIdBiMap.getKey(obj.classId),
+                type: curseforgeClassIdBiMap.inverse.get(obj.classId),
                 id: obj.id.toString(),
                 slug: obj.slug,
                 title: obj.name,
@@ -198,7 +198,7 @@ export class CurseforgeApi {
                     parent,
                     id: item.id.toString(),
                     versionNumber: ModVersionNumber.parseString(item.displayName),
-                    versionStage: new VersionStage(curseforgeReleaseTypeBiMap.getKey(item.releaseType)),
+                    versionStage: new VersionStage(curseforgeReleaseTypeBiMap.inverse.get(item.releaseType)),
                     name: item.displayName,
                     dependencies: (Array.isArray(item.dependencies)) ?
                         item.dependencies.map(denpendency => new DependencyInfo(
@@ -232,7 +232,7 @@ export class CurseforgeApi {
                     files: [(() => {
                         const file = new ModFile(item.id.toString(), item.downloadUrl, item.fileName, item.fileLength);
                         for (const hash of item.hashes) {
-                            file.setHash(curseforgeHashAlgo.getKey(hash.algo), hash.value);
+                            file.setHash(curseforgeHashAlgo.inverse.get(hash.algo), hash.value);
                         }
                         return file;
                     })()],

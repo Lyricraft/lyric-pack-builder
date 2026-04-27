@@ -54,9 +54,9 @@ export const CURSEFORGE_CONTENT_URL_REGEX = /curseforge\.com\/minecraft\/(mc-mod
 export function curseforgeContentUrlToReference(url, type = null) {
     const match = url.match(CURSEFORGE_CONTENT_URL_REGEX);
 
-    let urlType = curseforgeContentGateway.getKey(match[1].toLowerCase());
-    if (curseforgeContentGateway.hasValue(urlType)) {
-        urlType = curseforgeContentGateway.getKey(urlType);
+    let urlType = curseforgeContentGateway.inverse.get(match[1].toLowerCase());
+    if (curseforgeContentGateway.inverse.has(urlType)) {
+        urlType = curseforgeContentGateway.inverse.get(urlType);
     } else {
         return null;
     }

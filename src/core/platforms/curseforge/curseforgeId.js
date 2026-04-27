@@ -1,7 +1,7 @@
 import {McContent, ModLoader, VersionStage, VersionStageName} from "../../mc/mcMods.js";
-import {BiMap} from "../../public/type.js";
 import {DependencyType} from "../objects/DependencyInfo.js";
 import {ModFileHashType} from "../objects/ModFile.js";
+import {BiMap} from "mnemonist";
 
 /*
     低质量垃圾 API 的绝佳范例。
