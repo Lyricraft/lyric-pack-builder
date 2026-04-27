@@ -6,10 +6,12 @@ import {
 } from "../contentReference/modrinthContentReference.js";
 import {ConfigError} from "../../../../errors.js";
 import {t} from "../../../../../i18n/translate.js";
+import {checkConfigStringType} from "../../../../checker.js";
 
 const versionReferenceMap = new Map();
 
 export function modrinthVersionReference(str, contentReference = null) {
+    checkConfigStringType(str, "", '.');
     for (const [key, value] of versionReferenceMap) {
         if (key.test(str)) {
             return value(str, contentReference);

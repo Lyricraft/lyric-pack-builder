@@ -78,6 +78,7 @@
 
     "error.configs.platformResourceReferenceTypeNotMatch": "平台资源引用的类型不匹配：$ 是 $ 类型，但应用在 $ 类型处",
     "error.configs.platformResourceReferenceContentNotMatch": "平台资源引用的项目不匹配：$ 依附于 $ 为 $ 的项目，但应用在 $ 处",
+    "error.configs.platformResourceVersionReferenceLacksContent": "平台资源引用因缺少 link，无法确定此 version 指的是哪个项目：$",
 
     "error.build.noConditionHit": "选择 $ 时，没有任何一个选项的条件满足"
 }

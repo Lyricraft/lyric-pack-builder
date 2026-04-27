@@ -5,10 +5,12 @@ import {
     CURSEFORGE_CONTENT_URL_REGEX,
     curseforgeContentUrlToReference
 } from "../contentReference/curseforgeContentReference.js";
+import {checkConfigStringType} from "../../../../checker.js";
 
 const versionReferenceMap = new Map();
 
 export function curseforgeVersionReference(str, contentReference = null) {
+    checkConfigStringType(str, "", '.');
     for (const [key, value] of versionReferenceMap) {
         if (key.test(str)) {
             return value(str, contentReference);

@@ -4,10 +4,12 @@ import {ArgTypeError} from "../../../../../public/errors.js";
 import {curseforgeContentUrlPath} from "../../../../../platforms/curseforge/curseforgeId.js";
 import {ConfigError} from "../../../../errors.js";
 import {t} from "../../../../../i18n/translate.js";
+import {checkConfigStringType} from "../../../../checker.js";
 
 const contentReferenceMap = new Map();
 
 export function curseforgeContentReference(str, type = "") {
+    checkConfigStringType(str, 'curseforge', 'link');
     for (const [key, value] of contentReferenceMap) {
         if (key.test(str)) {
             return value(str, type);

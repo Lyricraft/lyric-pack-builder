@@ -2,10 +2,12 @@ import {ContentReference} from "./contentReference.js";
 import {stringUsable} from "../../../../../public/type.js";
 import {ConfigError} from "../../../../errors.js";
 import {t} from "../../../../../i18n/translate.js";
+import {checkConfigStringType} from "../../../../checker.js";
 
 const contentReferenceMap = new Map();
 
 export function modrinthContentReference(str, type = "") {
+    checkConfigStringType(str, 'modrinth', 'link');
     for (const [key, value] of contentReferenceMap) {
         if (key.test(str)) {
             return value(str, type);
