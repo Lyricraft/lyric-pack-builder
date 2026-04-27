@@ -1,7 +1,7 @@
 import {ContentReference} from "./contentReference.js";
 import {stringUsable} from "../../../../../public/type.js";
 import {ArgTypeError} from "../../../../../public/errors.js";
-import {curseforgeContentGateway} from "../../../../../platforms/curseforge/curseforgeId.js";
+import {curseforgeContentUrlPath} from "../../../../../platforms/curseforge/curseforgeId.js";
 import {ConfigError} from "../../../../errors.js";
 import {t} from "../../../../../i18n/translate.js";
 
@@ -54,9 +54,9 @@ export const CURSEFORGE_CONTENT_URL_REGEX = /curseforge\.com\/minecraft\/(mc-mod
 export function curseforgeContentUrlToReference(url, type = null) {
     const match = url.match(CURSEFORGE_CONTENT_URL_REGEX);
 
-    let urlType = curseforgeContentGateway.inverse.get(match[1].toLowerCase());
-    if (curseforgeContentGateway.inverse.has(urlType)) {
-        urlType = curseforgeContentGateway.inverse.get(urlType);
+    let urlType = curseforgeContentUrlPath.inverse.get(match[1].toLowerCase());
+    if (curseforgeContentUrlPath.inverse.has(urlType)) {
+        urlType = curseforgeContentUrlPath.inverse.get(urlType);
     } else {
         return null;
     }
