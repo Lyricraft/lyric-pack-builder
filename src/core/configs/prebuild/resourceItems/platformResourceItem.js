@@ -14,15 +14,15 @@ import {ConfigFieldMissingError} from "../../errors.js";
 export class PlatformResourceItem extends ResourceItem {
     static TYPE = 'platform';
 
-    constructor(obj) {
+    constructor(obj, folderMap) {
         super(obj);
 
         this.content = checkConfigEnum(obj.content, 'ResourceItem(type=platform)', 'content',
             'string(PlatformResourceContent)', PlatformResourceContent);
 
         this.resourceLocation = parseInnerObj(obj, 'ResourceItem(type=platform)', '.',
-            (obj2) => ResourceLocation.fromObj(obj2, LPB.prebuildManager.resourceFolderMap,
-                new ResourceLocation(LPB.prebuildManager.resourceFolderMap.get(ContentFolders.get(this.content))??null)));
+            (obj2) => ResourceLocation.fromObj(obj2, folderMap,
+                new ResourceLocation(folderMap.get(ContentFolders.get(this.content))??null)));
 
         // 解析平台
         this.platforms = new Map();
