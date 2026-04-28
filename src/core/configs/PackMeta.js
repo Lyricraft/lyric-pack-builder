@@ -1,7 +1,7 @@
-import {checkEnum, StringType, stringUsable} from "../../public/type.js";
-import {ConfigFieldTypeError} from "../errors.js";
-import {VersionStage} from "../../mc/mcMods.js";
-import {checkConfigEnum, checkConfigStringType} from "../checker.js";
+import {checkEnum, StringType, stringUsable} from "../public/type.js";
+import {ConfigFieldTypeError} from "./errors.js";
+import {VersionStage} from "../mc/mcMods.js";
+import {checkConfigEnum, checkConfigStringType} from "./checker.js";
 
 export class PackMeta {
     constructor(id, name, version, extra = {}) {
