@@ -60,7 +60,7 @@ export class ResourceLocation {
         } else {
             let dir = obj.dir;
             if (isNullOrUndefined(dir)) {
-                if (!defaultResourceLocation) {
+                if (!defaultResourceLocation || !defaultResourceLocation.resourceDir) {
                     throw new ConfigFieldMissingError('ResourceLocation', 'path / dir');
                 }
                 dir = defaultResourceLocation.fullDir();
@@ -70,7 +70,7 @@ export class ResourceLocation {
 
             let name = obj.rename;
             if (isNullOrUndefined(name)) {
-                if (!defaultResourceLocation) {
+                if (!defaultResourceLocation || !defaultResourceLocation.fileName) {
                     throw new ConfigFieldMissingError('ResourceLocation', 'rename');
                 }
                 name = defaultResourceLocation.fileName;
