@@ -1,10 +1,32 @@
 import {BiMap} from "mnemonist";
 import {PlatformResourceContent} from "../enums.js";
+import {StringType, stringUsable} from "../../public/type.js";
 
 export const ResourceFolderType = {
     BUILTIN: 'builtin',
     BUILDER: 'builder',
     LIST: 'list',
+}
+
+export function resourceFolderTypeAndIdFromString(str) {
+    const split = str.split(':');
+    if (split.length === 1) {
+        return stringUsable(split[0], StringType.ID) ? {
+            type: ResourceFolderType.LIST,
+            id: split[0],
+        } : null;
+    } else if (split.length === 2) {
+        if (split[0] === ResourceFolderType.LIST || split[1] === ResourceFolderType.BUILDER) {
+            return stringUsable(split[1]) ? {
+                type: split[0],
+                id: split[1],
+            } : null;
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
 }
 
 export class ResourceFolder {
