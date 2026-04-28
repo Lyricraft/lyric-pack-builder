@@ -63,5 +63,5 @@ versionReferenceMap
     .set(CURSEFORGE_DOWNLOAD_URL_REGEX, function (url, contentReference = null) {
         // const match = url.match(CURSEFORGE_DOWNLOAD_URL_REGEX)
         // const id = match[1] + match[2];
-        return new CurseforgeIdVersionReference(url, contentReference);
+        return new CurseforgeDownloadUrlReference(url, contentReference);
     });
