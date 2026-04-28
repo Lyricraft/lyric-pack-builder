@@ -4,7 +4,7 @@ import {isNullOrUndefined, StringType, stringUsable} from "../../public/type.js"
 import {checkConfigStringType} from "../checker.js";
 import {BuiltinFolders, DEFAULT_FOLDER_MAP} from "./resourceFolder.js";
 import path from "path";
-import {TypedError} from "../../public/errors.js";
+import {ArgTypeError, TypedError} from "../../public/errors.js";
 
 export class ResourceDir {
     constructor(folder, dir) {
@@ -20,6 +20,10 @@ export class ResourceDir {
         return path.join(this.folder ? this.folder.path : BuiltinFolders.BASE.path, this.dir);
     }
 }
+
+// 在提供默认文件名，但尚未得到默认文件名时，使用此占位符占位，
+// 在后面得到默认文件名后，再调用 fullPath，传入已定默认名称，自会进行替换
+export const RESOURCE_LOCATION_PENDING_FILE_NAME_PLACEHOLDER = ':pending'
 
 export class ResourceLocation {
 
@@ -80,8 +84,18 @@ export class ResourceLocation {
         }
     }
 
-    fullPath(defaultResourceLocation = null) {
-        return path.join(this.resourceDir.fullDir(), this.fileName);
+    getFileName(defaultFileName = "") {
+        if (this.fileName === RESOURCE_LOCATION_PENDING_FILE_NAME_PLACEHOLDER ) {
+            if (!stringUsable(defaultFileName)) {
+                throw new ArgTypeError('defaultFileName', 'FileName', defaultFileName);
+            }
+            return defaultFileName;
+        }
+        return this.fileName;
+    }
+
+    fullPath(defaultFileName = "") {
+        return path.join(this.resourceDir.fullDir(), this.getFileName(defaultFileName));
     }
 }
 

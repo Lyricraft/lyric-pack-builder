@@ -1,6 +1,6 @@
 import {ResourceItem} from "./resourceItem.js";
 import {parseInnerObj} from "../../parser.js";
-import {ResourceLocation} from "../../objects/resourceLocation.js";
+import {RESOURCE_LOCATION_PENDING_FILE_NAME_PLACEHOLDER, ResourceLocation} from "../../objects/resourceLocation.js";
 import {LPB} from "../../../lpb.js";
 import {checkConfigEnum} from "../../checker.js";
 import {PlatformResourceContent} from "../../enums.js";
@@ -22,7 +22,8 @@ export class PlatformResourceItem extends ResourceItem {
 
         this.resourceLocation = parseInnerObj(obj, 'ResourceItem(type=platform)', '.',
             (obj2) => ResourceLocation.fromObj(obj2, folderMap,
-                new ResourceLocation(folderMap.get(ContentFolders.get(this.content))??null)));
+                new ResourceLocation(folderMap.get(ContentFolders.get(this.content))??null,
+                    RESOURCE_LOCATION_PENDING_FILE_NAME_PLACEHOLDER)));
 
         // 解析平台
         this.platforms = new Map();
