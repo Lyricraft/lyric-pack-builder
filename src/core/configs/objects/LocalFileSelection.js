@@ -1,5 +1,6 @@
 import {StringType, stringUsable} from "../../public/type.js";
 import {ArgTypeError} from "../../public/errors.js";
+import path from "path";
 
 export class LocalFileSelection {
     constructor(path, wildcard) {
@@ -17,5 +18,9 @@ export class LocalFileSelection {
             throw new ArgTypeError('path', 'string(FilePathWithWildcard)', str);
         }
         return new LocalFileSelection(str, wildcard);
+    }
+
+    suggestedFilename() {
+        return path.basename(this.path);
     }
 }

@@ -13,9 +13,13 @@ export const CompressTypeOption = {
     ZIP: 'zip',
 }
 
+export const CompressTypeOptionExtension = new Map()
+    .set(CompressTypeOption.NONE, "")
+    .set(CompressTypeOption.ZIP, '.zip');
+
 class FilesResourceItemFileItem {
 
-    constructor(obj, folderMap, defaultResourceLocation) {
+    constructor(obj, folderMap) {
 
         checkConfigStringType(obj.file, 'File', 'file')
         try {
@@ -28,7 +32,8 @@ class FilesResourceItemFileItem {
             'CompressType', CompressTypeOption, CompressTypeOption.NONE);
 
         this.resourceLocation = parseInnerObj(obj, 'File', "",
-            rl => ResourceLocation.fromObj(rl, folderMap, defaultResourceLocation));
+            rl => ResourceLocation.fromObj(rl, folderMap, new ResourceLocation(null,
+                this.file.suggestedFilename() + CompressTypeOptionExtension.get(this.compress))));
 
         this.condition = parseInnerObj(obj.condition, 'File', 'conditions',
             Condition.fromString, Condition.always());
@@ -38,7 +43,7 @@ class FilesResourceItemFileItem {
 export class FilesResourceItem extends ResourceItem {
     static TYPE = 'files';
 
-    constructor(obj, folderMap, defaultResourceLocation = null) {
+    constructor(obj, folderMap) {
         super(obj);
 
         this.files = [];
@@ -58,7 +63,7 @@ export class FilesResourceItem extends ResourceItem {
         for(const objItem of objFiles) {
             this.files.push(parseInnerObj(objItem, 'ResourceItem(type=files)',
                 `files[${stringUsable(objItem.file) ? `file=${objItem.file}` : '?'}]`,
-                objFile => new FilesResourceItemFileItem(objFile, folderMap, defaultResourceLocation)));
+                objFile => new FilesResourceItemFileItem(objFile, folderMap)));
         }
     }
 }
