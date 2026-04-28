@@ -1,9 +1,8 @@
-import {VersionedContentReference, VersionedContentReferenceTypes} from "./VersionedContentReference.js";
+import {VersionedContentReference} from "./VersionedContentReference.js";
 import {modrinthContentReference} from "../contentReference/modrinthContentReference.js";
 import {modrinthVersionReference} from "../versionReference/modrinthVersionReference.js";
-import {PubPlatform} from "../../../../../mc/mcMods.js";
 
-class ModrinthVersionedContentReference extends VersionedContentReference {
+export class ModrinthVersionedContentReference extends VersionedContentReference {
     parseContentReference(str) {
         return modrinthContentReference(str);
     }
@@ -12,4 +11,3 @@ class ModrinthVersionedContentReference extends VersionedContentReference {
         return modrinthVersionReference(str);
     }
 }
-VersionedContentReferenceTypes.set(PubPlatform.MODRINTH, ModrinthVersionedContentReference);

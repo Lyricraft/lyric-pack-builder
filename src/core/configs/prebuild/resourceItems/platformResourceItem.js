@@ -6,9 +6,9 @@ import {checkConfigEnum} from "../../checker.js";
 import {PlatformResourceContent} from "../../enums.js";
 import {ContentFolders} from "../../objects/resourceFolder.js";
 import {PubPlatform} from "../../../mc/mcMods.js";
-
-import {VersionedContentReference} from "./platformResourceItem/versionedContentReference/VersionedContentReference.js";
-import {} from './platformResourceItem/versionedContentReference/versionedContentReferenceTypes.js'
+import {
+    versionedContentReferenceFrom
+} from './platformResourceItem/versionedContentReference/versionedContentReferenceTypes.js'
 import {ConfigFieldMissingError} from "../../errors.js";
 
 export class PlatformResourceItem extends ResourceItem {
@@ -29,7 +29,7 @@ export class PlatformResourceItem extends ResourceItem {
 
         for(const [,platform] of Object.entries(PubPlatform)) {
             if (Object.hasOwn(obj, platform)) {
-                this.platforms.set(platform, VersionedContentReference.from(platform, obj[platform]));
+                this.platforms.set(platform, versionedContentReferenceFrom(platform, obj[platform]));
             }
         }
 

@@ -2,9 +2,11 @@ import {parseInnerObj} from "../../../../parser.js";
 import {VersionSelection} from "../../../../objects/VersionSelection.js";
 import {ConfigError} from "../../../../errors.js";
 import {t} from "../../../../../i18n/translate.js";
-import {ArgTypeError} from "../../../../../public/errors.js";
 
-export const VersionedContentReferenceTypes = new Map();
+/*
+    Map<PubPlatform, class>
+ */
+export const VersionedContentReferenceClasses = new Map();
 
 export class VersionedContentReference {
 
@@ -33,16 +35,5 @@ export class VersionedContentReference {
 
     parseVersionReference(str) {
         // to be overridden
-    }
-
-    static from (platform, obj) {
-
-        const parser = VersionedContentReferenceTypes.get(platform);
-
-        if (!parser) {
-            throw new ArgTypeError('platform', 'PubPlatform', platform);
-        }
-
-        return(parser(obj));
     }
 }

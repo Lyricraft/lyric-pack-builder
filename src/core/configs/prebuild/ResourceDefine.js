@@ -4,6 +4,7 @@ import {ConfigFieldError} from "../errors.js";
 import {t} from "../../i18n/translate.js";
 import {ResourceItem} from "./resourceItems/resourceItem.js";
 import {parseInnerObj} from "../parser.js";
+import {resourceItemFrom} from "./resourceItems/resourceItemTypes.js";
 
 export class ResourceDefine {
     constructor(id, main, secondary) {
@@ -21,7 +22,7 @@ export class ResourceDefine {
                     t('error.configs.varietyDefine', 'ResourceDefine', 'type', 'main'));
             }
             // 没有 conditions 的 ResourceItem 会被自动解析为 always
-            main.push(parseInnerObj(obj, 'ResourceDefine', 'main', ResourceItem.from));
+            main.push(parseInnerObj(obj, 'ResourceDefine', 'main', resourceItemFrom));
         } else if (isPlainObject(obj.main)) {
             // main 字段填的是单个资源
 
@@ -44,7 +45,7 @@ export class ResourceDefine {
                     if (!isPlainObject(item)) {
                         return false;
                     }
-                    main.push(parseInnerObj(item, 'ResourceDefine', 'main[*]', ResourceItem.from));
+                    main.push(parseInnerObj(item, 'ResourceDefine', 'main[*]', resourceItemFrom));
                 });
         } else {
             throw new ConfigFieldError('ResourceDefine', 'main',
@@ -58,7 +59,7 @@ export class ResourceDefine {
                 if (!isPlainObject(item)) {
                     return false;
                 }
-                secondary.push(parseInnerObj(item, 'ResourceDefine', 'secondary[*]', ResourceItem.from));
+                secondary.push(parseInnerObj(item, 'ResourceDefine', 'secondary[*]', resourceItemFrom));
             })
 
         return new ResourceDefine(obj.id, main, secondary);

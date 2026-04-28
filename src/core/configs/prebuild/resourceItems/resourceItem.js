@@ -4,6 +4,9 @@ import {checkConfigEnum, checkConfigField} from "../../checker.js";
 import {ModSideOption} from "../../../mc/mcMods.js";
 import {stringUsable} from "../../../public/type.js";
 
+/*
+    Map<string(ResourceItemType), func>
+ */
 export const ResourceItemTypes = new Map();
 
 export class ResourceItem{
