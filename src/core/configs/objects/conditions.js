@@ -8,10 +8,17 @@ import {StringExpressionParser} from "../../utils/StringExpressionParser.js";
 
 // 在这一刻，我明白了：原来屎山，并不一定是丑陋的。
 
-export const DEFAULT_CONDITION_MAP = new Map();
+/*
+    Map<string(ConditionType), func>
+    因为 ConditionTypes 的 Map 可以扩展，为保留灵活性，支持未来可能出现的各种形式，Map 里一律存 func
+ */
+export const DEFAULT_CONDITION_TYPES = new Map();
 
-export function extendConditionMap() {
-    return new Map(DEFAULT_CONDITION_MAP);
+/*
+    Map<string(ConditionType), func>
+ */
+export function extendConditionTypes() {
+    return new Map(DEFAULT_CONDITION_TYPES);
 }
 
 /*
@@ -40,7 +47,7 @@ export class Condition {
         return new BoolCondition(false);
     }
 
-    static fromString(str, conditionMap = DEFAULT_CONDITION_MAP, dependencies = null) {
+    static fromString(str, typeMap = DEFAULT_CONDITION_TYPES, dependencies = null) {
         checkConfigStringType(str, 'condition', '.', undefined, 'string(ConditionExpression)');
         str = str.trim();
         checkConfigStringType(str, 'condition', '.', undefined, 'string(ConditionExpression)');
@@ -49,7 +56,7 @@ export class Condition {
         // 事实上，一个条件表达式可以看作只有一个关键字，其余都是嵌套。
         // 所以在将一个关键字与其参数解析完后，表达式理应已结束。
 
-        const result = expNextCondition(exp, conditionMap, dependencies);
+        const result = expNextCondition(exp, typeMap, dependencies);
         if (stringUsable(exp.nextValidChar())) {
             // 表达式该结束未结束
             throw new ConfigFieldError("", 'condition',  t('error.configs.expEndNeeded', 'Condition', exp.nowChar()));
@@ -109,7 +116,7 @@ class OrCondition extends Condition {
     }
 }
 
-function expNextCondition(exp, conditionMap, dependencies) {
+function expNextCondition(exp, typeMap, dependencies) {
 
     // 读关键字
     exp.nextValidChar();
@@ -141,7 +148,7 @@ function expNextCondition(exp, conditionMap, dependencies) {
                 throw new ConfigFieldError("", 'condition', t('error.configs.expUnexpectedChar', 'Condition', 'Keyword', exp.nowChar()));
             }
             exp.back();
-            nestedConditions.push(expNextCondition(exp, conditionMap, dependencies));
+            nestedConditions.push(expNextCondition(exp, typeMap, dependencies));
 
             const afterNext = exp.nextValidChar();
             if (afterNext === "") {
@@ -165,7 +172,7 @@ function expNextCondition(exp, conditionMap, dependencies) {
             return new NotCondition(nestedConditions);
         }
     } else {
-        if (conditionMap.has(keyword)) {
+        if (typeMap.has(keyword)) {
             const next = exp.nextValidChar();
             const endedRegex = /[,\s\])]/;
             if (next === "[") {
@@ -199,7 +206,7 @@ function expNextCondition(exp, conditionMap, dependencies) {
                     }
                 }
 
-                return new (conditionMap.get(keyword))(args, allFit, dependencies)
+                return (typeMap.get(keyword))(args, allFit, dependencies)
             } else {
                 const arg =
                     exp.back().nextArg(endedRegex, true, StringExpressionParser.QUOTES_REGEX);
@@ -207,7 +214,7 @@ function expNextCondition(exp, conditionMap, dependencies) {
                     // 缺失参数
                     throw new ConfigFieldError("", 'condition',  t('error.configs.expLackArg', 'Condition', 'ConditionArg'));
                 }
-                return new (conditionMap.get(keyword))([arg], false, dependencies)
+                return (typeMap.get(keyword))([arg], false, dependencies)
             }
         } else {
             // 无法识别的条件类型
@@ -284,7 +291,7 @@ class McVersionCondition extends ArrayArgCondition {
         return item.fit(context.mcVersion);
     }
 }
-DEFAULT_CONDITION_MAP.set('mcVersion', McVersionCondition);
+DEFAULT_CONDITION_TYPES.set('mcVersion', (ar, aF, d) => new McVersionCondition(ar, aF, d));
 
 class ModLoaderCondition extends ArrayArgCondition {
 
@@ -313,7 +320,7 @@ class ModLoaderCondition extends ArrayArgCondition {
         return context.modLoader === item;
     }
 }
-DEFAULT_CONDITION_MAP.set('modLoader', ModLoaderCondition);
+DEFAULT_CONDITION_TYPES.set('modLoader', (ar, aF, d) => new ModLoaderCondition(ar, aF, d));
 
 class PackFormatCondition extends ArrayArgCondition {
     constructor(array, allFit, dependencies = null) {
@@ -341,7 +348,7 @@ class PackFormatCondition extends ArrayArgCondition {
         return context.packFormat === item;
     }
 }
-DEFAULT_CONDITION_MAP.set('packFormat', PackFormatCondition);
+DEFAULT_CONDITION_TYPES.set('packFormat', (ar, aF, d) => new PackFormatCondition(ar, aF, d));
 
 class OptionCondition extends ArrayArgCondition {
 
@@ -400,7 +407,7 @@ class OptionCondition extends ArrayArgCondition {
         return false;
     }
 }
-DEFAULT_CONDITION_MAP.set('option', OptionCondition);
+DEFAULT_CONDITION_TYPES.set('option', (ar, aF, d) => new OptionCondition(ar, aF, d));
 
 class ResourceCondition extends ArrayArgCondition {
 
@@ -426,5 +433,5 @@ class ResourceCondition extends ArrayArgCondition {
         return (context.resources?.includes(item));
     }
 }
-DEFAULT_CONDITION_MAP.set('resource', ResourceCondition);
+DEFAULT_CONDITION_TYPES.set('resource', (ar, aF, d) => new ResourceCondition(ar, aF, d));
 

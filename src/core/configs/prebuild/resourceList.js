@@ -9,7 +9,7 @@ import {deepClone, deepMerge, isPlainObject, StringType, stringUsable} from "../
 import {t} from "../../i18n/translate.js";
 import {getRandomIntId} from "../../public/calculate.js";
 import {checkConfigArray, checkConfigField, checkConfigStringChars, checkConfigStringType} from "../checker.js";
-import {Condition, DEFAULT_CONDITION_MAP} from "../objects/conditions.js";
+import {Condition, DEFAULT_CONDITION_TYPES} from "../objects/conditions.js";
 import {parseInnerObj} from "../parser.js";
 
 // 如果能一次做到极致的完美，那为什么还有经年累月的修复与优化呢？
@@ -115,7 +115,7 @@ export class ResourceOption {
 
         let conDependencies = requireConD ? {} : null; // 避免创建不使用的对象（不知道有没有用）
         let condition = parseInnerObj(obj.condition, 'Option', 'condition',
-            (str) => Condition.fromString(str, DEFAULT_CONDITION_MAP,
+            (str) => Condition.fromString(str, DEFAULT_CONDITION_TYPES,
                 requireConD ? conDependencies : undefined), null);
         if (!condition) {
             condition = Condition.always();
