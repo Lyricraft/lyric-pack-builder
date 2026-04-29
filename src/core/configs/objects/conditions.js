@@ -77,6 +77,7 @@ class BoolCondition extends Condition {
     }
 }
 
+// 所有子条件都不满足，即 not(or[])
 class NotCondition extends Condition {
     constructor(conditions) {
         super();
@@ -85,8 +86,8 @@ class NotCondition extends Condition {
 
     test(context, factors = null) {
         for (const item of this.conditions)
-            if (!item.test(context, factors)) return true;
-        return false;
+            if (item.test(context, factors)) return false;
+        return true;
     }
 }
 
