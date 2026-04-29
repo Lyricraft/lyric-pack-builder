@@ -18,19 +18,19 @@ export class PackTarget {
             throw new ConfigFieldTypeError('Target', 'mcVersions', 'string(VersionRange)[]', obj.mcVersions);
         }
         const versionRanges = [];
-        const mcVersions = [];
+        let mcVersions = [];
         for (const versionRange of obj.mcVersions) {
             try {
                 versionRanges.push(VersionRange.fromString(versionRange));
             } catch (e) {
                 throw new ConfigFieldTypeError('Target', 'mcVersions[*]', 'string(VersionRange)', obj.mcVersions, e);
             }
-            this.mcVersions = [...new Set([...this.mcVersions, ...versionRange.getAllInRange(versionsList)])];
+            mcVersions = [...new Set([...mcVersions, ...versionRange.getAllInRange(versionsList)])];
         }
         if (versionRanges.length === 0) {
             throw new ConfigEmptyArrayError('Target', 'mcVersions');
         }
-        if (this.mcVersions.length === 0) {
+        if (mcVersions.length === 0) {
             throw new ConfigFieldError('Target', 'mcVersions', t('error.configs.noVersionInRange'));
         }
 
