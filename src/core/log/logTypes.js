@@ -7,7 +7,7 @@ export const LogType = {
     ERROR: 'error',
 }
 
-export const logHandles = {
+export const LogHandles = {
     [LogType.LOG]: console.log,
     [LogType.INFO]: console.info,
     [LogType.WARN]: console.warn,

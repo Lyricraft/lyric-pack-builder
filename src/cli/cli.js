@@ -1,5 +1,5 @@
 import {FILE_LOGGER} from "../core/log/fileLogger.js";
-import {logHandles, LogType} from "../core/log/logTypes.js";
+import {LogHandles, LogType} from "../core/log/logTypes.js";
 import {ArgsError} from "../core/public/errors.js";
 import * as readline from "node:readline";
 
@@ -164,7 +164,7 @@ class Cli {
 
     // 外面别用！
     outLine(type, ...args) {
-        logHandles[type](...args);
+        LogHandles[type](...args);
     }
 
     log(type, ...args) {

@@ -1,5 +1,6 @@
 import {CLI} from "../../cli/cli.js";
-import {LogType} from "./logTypes.js";
+import {LogHandles, LogType} from "./logTypes.js";
+import {ArgTypeError} from "../public/errors.js";
 
 /*
     logger.typedLog ---> CLI.log ---> FILE_LOGGER.log
@@ -7,6 +8,9 @@ import {LogType} from "./logTypes.js";
 
 export default {
     typedLog(type, ...args) {
+        if (!Object.hasOwn(LogHandles, type)) {
+            throw new ArgTypeError('type', 'LogType', type);
+        }
         CLI.log(type, ...args);
     },
     log(...args) {
