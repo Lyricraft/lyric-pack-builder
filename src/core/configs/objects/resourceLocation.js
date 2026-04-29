@@ -37,7 +37,7 @@ export class ResourceLocation {
         if (restPath.length === 0) {
             throw new ConfigFieldTypeError('ResourceLocation', 'path', 'string(ResourcePath)', restPath);
         }
-        return new ResourceLocation(new ResourceDir(folder, path.dirname(p)), path.basename(p));
+        return new ResourceLocation(new ResourceDir(folder, path.dirname(restPath)), path.basename(restPath));
     }
 
     static fromDirAndRename(dir, folderMap, rename = null) {
@@ -113,6 +113,7 @@ function getFolderAndPath(str, folderMap) {
             throw new ConfigFieldError('ResourceLocation', 'path',
                 t('error.configs.invalidResourceDir', str));
         }
+        obj.path = restPath;
 
         obj.folder = folderMap.get(folderName);
         if (!obj.folder) {
@@ -128,6 +129,7 @@ function getFolderAndPath(str, folderMap) {
             throw new ConfigFieldError('ResourceLocation', 'path',
                 t('error.configs.invalidResourceDir', str));
         }
+        obj.path = str;
 
         return obj;
     }
