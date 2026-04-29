@@ -19,10 +19,4 @@ export class ResourceItem{
         this.side = checkConfigEnum(obj.side, 'ResourceItem', 'side', 'string(ModSideOption)',
             ModSideOption, ModSideOption.AUTO);
     }
-
-    static from(obj) {
-        checkConfigField(obj.type, 'ResourceItem', 'type',
-            'string(ResourceItemType)', (str) => (stringUsable(str) && ResourceItemTypes.has(str)));
-        return (ResourceItemTypes.get(obj.type))(obj);
-    }
 }

@@ -19,7 +19,7 @@ for(const content of Object.values(PlatformResourceContent)) {
     });
 }
 
-export  function resourceItemFrom(obj) {
+export function resourceItemFrom(obj) {
     checkConfigField(obj.type, 'ResourceItem', 'type',
         'string(ResourceItemType)', (str) => (stringUsable(str) && ResourceItemTypes.has(str)));
     return (ResourceItemTypes.get(obj.type))(obj);
