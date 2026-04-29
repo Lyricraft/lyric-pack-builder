@@ -18,7 +18,7 @@ class FolderDefine {
     }
 
     static singlePath(type, id, path) {
-        const folderDefine = new FolderDefine(name);
+        const folderDefine = new FolderDefine(type, id);
         folderDefine.addAPath(path, Condition.always());
         return folderDefine;
     }

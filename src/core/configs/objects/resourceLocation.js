@@ -74,7 +74,7 @@ export class ResourceLocation {
 
             let name = obj.rename;
             if (isNullOrUndefined(name)) {
-                if (!defaultResourceLocation || !defaultResourceLocation.fileName) {
+                if (!defaultResourceLocation || !stringUsable(defaultResourceLocation.fileName)) {
                     throw new ConfigFieldMissingError('ResourceLocation', 'rename');
                 }
                 name = defaultResourceLocation.fileName;

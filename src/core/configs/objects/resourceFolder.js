@@ -16,7 +16,7 @@ export function resourceFolderTypeAndIdFromString(str) {
             id: split[0],
         } : null;
     } else if (split.length === 2) {
-        if (split[0] === ResourceFolderType.LIST || split[1] === ResourceFolderType.BUILDER) {
+        if (split[0] === ResourceFolderType.LIST || split[0] === ResourceFolderType.BUILDER) {
             return stringUsable(split[1]) ? {
                 type: split[0],
                 id: split[1],
