@@ -64,6 +64,7 @@ class InputState extends State {
                     } else {
                         // 再来一遍！
                         setTimeout(question, 0); // 不会爆栈啦！
+                        // TODO: 改成循环风格以免仍然存在问题
                     }
                 }
             })

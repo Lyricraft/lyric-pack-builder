@@ -3,6 +3,8 @@ import fss from "node:fs";
 import path from "path";
 import { t } from "../i18n/translate.js";
 
+// TODO: 换用成熟日志库来完全取缔豆包的代码
+
 class FileLogger {
     constructor() {
         this.stream = null;
