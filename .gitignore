@@ -33,3 +33,5 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Agents
+.qoder/
